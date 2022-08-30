@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+// DCFIXME: for standard typedefs below
+#if defined(_arch_dreamcast)
+#include <sys/_types.h>
+#endif  // defined(_arch_dreamcast)
+
 #define sprintf_s(x, _, ...) sprintf(x, __VA_ARGS__)
 
 #if defined _WIN32
@@ -21,12 +26,15 @@
 // STANDARD TYPES
 // -------------------------
 
+// DCFIXME: typedefs disabled
+#if !defined(_arch_dreamcast)
 typedef signed char int8;
 typedef unsigned char uint8;
 typedef signed short int16;
 typedef unsigned short uint16;
 typedef signed int int32;
 typedef unsigned int uint32;
+#endif  // !defined(_arch_dreamcast)
 
 typedef uint32 bool32;
 #define true 1

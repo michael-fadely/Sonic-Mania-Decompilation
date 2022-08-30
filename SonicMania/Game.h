@@ -37,7 +37,11 @@
 #endif
 
 #ifndef RETRO_USE_MOD_LOADER
+#ifdef _arch_dreamcast // DCFIXME
+#define RETRO_USE_MOD_LOADER (0)
+#else
 #define RETRO_USE_MOD_LOADER (1)
+#endif
 #endif
 
 #ifndef RETRO_MOD_LOADER_VER
