@@ -52,6 +52,11 @@ ifneq ("$(wildcard makefiles/$(PLATFORM).cfg)","")
 	include makefiles/$(PLATFORM).cfg
 endif
 
+ifeq ("$(PLATFORM)", "KallistiOS")
+	include $(KOS_BASE)/Makefile.rules
+	CFLAGS += $(KOS_CFLAGS)
+endif
+
 OUTDIR = bin/$(PLATFORM)
 GAME_OBJDIR = bin/obj/$(PLATFORM)/$(GAME_NAME)
 
@@ -90,11 +95,17 @@ DEFINES += -DRETRO_REVISION=$(RSDK_REVISION)
 
 CFLAGS_ALL += $(CFLAGS) \
 			   -fsigned-char 
-		
-CXXFLAGS_ALL += $(CXXFLAGS) \
-			   -std=c++17 \
+
+ifneq ("$(PLATFORM)","KallistiOS")		
+	CXXFLAGS_ALL += $(CXXFLAGS) \
+				   -std=c++17 \
+				   -fsigned-char \
+				   -fpermissive 
+else
+	CXXFLAGS_ALL += $(CXXFLAGS) \
 			   -fsigned-char \
 			   -fpermissive 
+endif
 
 LDFLAGS_ALL = $(LDFLAGS)
 
