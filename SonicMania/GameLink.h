@@ -44,7 +44,11 @@ typedef uint32 color;
 // -------------------------
 
 #ifndef SCREEN_XMAX
+#if defined(_arch_dreamcast)
+#define SCREEN_XMAX (640)
+#else
 #define SCREEN_XMAX (1280)
+#endif
 #endif
 
 #ifndef SCREEN_YSIZE
