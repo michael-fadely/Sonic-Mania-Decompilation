@@ -249,7 +249,7 @@ void SaveGame_SaveLoadedCB(bool32 success)
         GameProgress_PrintSaveProgress();
     }
 
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
     if ((globals->taTableID == -1 || globals->taTableLoaded != STATUS_OK) && globals->taTableLoaded != STATUS_CONTINUE)
         TimeAttackData_LoadDB(NULL);
 #endif

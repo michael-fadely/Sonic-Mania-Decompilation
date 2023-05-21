@@ -21,7 +21,11 @@ void CompetitionSession_Create(void *data) {}
 
 void CompetitionSession_StageLoad(void) {}
 
+#if defined(_arch_dreamcast)
+EntityCompetitionSession *CompetitionSession_GetSession(void) { return NULL; } // DCFIXME
+#else
 EntityCompetitionSession *CompetitionSession_GetSession(void) { return (EntityCompetitionSession *)globals->competitionSession; }
+#endif
 
 #if !MANIA_USE_PLUS
 void CompetitionSession_ResetOptions(void)

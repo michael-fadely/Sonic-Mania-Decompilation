@@ -80,10 +80,13 @@ void UIVsResults_SetupSprites(void)
 {
     RSDK_THIS(UIVsResults);
 
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+#endif
 
     self->characterID = self->playerID;
     if (!SceneInfo->inEditor) {
+#if !defined(_arch_dreamcast)
         switch (session->playerID[self->playerID]) {
             case ID_SONIC: self->characterID = UICHARBUTTON_SONIC; break;
             case ID_TAILS: self->characterID = UICHARBUTTON_TAILS; break;
@@ -94,6 +97,7 @@ void UIVsResults_SetupSprites(void)
 #endif
             default: break;
         }
+#endif
     }
 
 #if MANIA_USE_PLUS

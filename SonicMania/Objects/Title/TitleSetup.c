@@ -71,11 +71,13 @@ void TitleSetup_StageLoad(void)
     memset(globals->optionsRAM, 0, sizeof(globals->optionsRAM));
 
 #if MANIA_USE_PLUS
+#if !defined(_arch_dreamcast)
     API.ClearUserDB(globals->replayTableID);
     API.ClearUserDB(globals->taTableID);
 
     globals->replayTableID     = (uint16)-1;
     globals->replayTableLoaded = STATUS_NONE;
+#endif
     globals->taTableID         = (uint16)-1;
     globals->taTableLoaded     = STATUS_NONE;
 #endif

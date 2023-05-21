@@ -139,6 +139,7 @@ void Competition_State_Manager(void)
 #if MANIA_USE_PLUS
 void Competition_ResetOptions(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     session->inMatch                  = false;
     session->matchID                  = 0;
@@ -163,10 +164,12 @@ void Competition_ResetOptions(void)
         session->wins[p]              = 0;
         session->lives[p]             = 0;
     }
+#endif
 }
 
 void Competition_ClearMatchData(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
     session->matchWinner[session->matchID] = 0;
@@ -181,10 +184,12 @@ void Competition_ClearMatchData(void)
         session->items[p]             = 0;
         session->totalRings[p]        = 0;
     }
+#endif
 }
 
 void Competition_DeriveWinner(int32 playerID, uint8 finishType)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     session->finishState[playerID]    = finishType;
 
@@ -279,14 +284,17 @@ void Competition_DeriveWinner(int32 playerID, uint8 finishType)
             }
         }
     }
+#endif
 }
 
 void Competition_WinMatchFor(int32 playerID)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
     ++session->wins[playerID];
     session->matchWinner[session->matchID] |= 1 << playerID;
+#endif
 }
 #endif
 

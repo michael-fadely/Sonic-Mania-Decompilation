@@ -192,7 +192,7 @@ void ActClear_Draw(void)
 
     drawPos.x += TO_FIXED(67);
     drawPos.y += TO_FIXED(14);
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
     if (globals->gameMode == MODE_TIMEATTACK) { // Draw Best Time
         TimeAttackData_GetUnpackedTime(self->time, &minutes, &seconds, &milliseconds);
         drawPos.x -= TO_FIXED(98);
@@ -203,7 +203,7 @@ void ActClear_Draw(void)
     else {
 #endif
         ActClear_DrawNumbers(&drawPos, self->ringBonus, 0);
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
     }
 #endif
 
@@ -235,11 +235,11 @@ void ActClear_Draw(void)
 
         drawPos.x += TO_FIXED(67);
         drawPos.y += TO_FIXED(14);
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
         if (globals->gameMode != MODE_TIMEATTACK) {
 #endif
             ActClear_DrawNumbers(&drawPos, self->coolBonus, 0); // Draw Cool bonus
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
         }
         else {
             // Draw Rank
@@ -258,7 +258,7 @@ void ActClear_Draw(void)
     drawPos.x = self->totalScorePos.x;
     drawPos.y = self->totalScorePos.y;
 
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
     if (globals->gameMode == MODE_TIMEATTACK) {
         // Draw World Rank
         drawPos.x                         = offset + self->totalScorePos.x - TO_FIXED(92);
@@ -301,7 +301,7 @@ void ActClear_Draw(void)
         drawPos.x += TO_FIXED(67);
         drawPos.y += TO_FIXED(14);
         ActClear_DrawNumbers(&drawPos, self->totalScore, 0);
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
     }
 #endif
 }

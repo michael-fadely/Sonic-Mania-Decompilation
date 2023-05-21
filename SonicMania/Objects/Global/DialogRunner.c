@@ -83,26 +83,40 @@ void DialogRunner_HandleCallback(void)
 
 void DialogRunner_NotifyAutoSave_CB(void)
 {
+    printf("here! %s:%u\n", __FILE__, __LINE__);
     DialogRunner->isAutoSaving = false;
     globals->notifiedAutosave  = true;
+    printf("here! %s:%u\n", __FILE__, __LINE__);
     UIWaitSpinner_FinishWait();
+    printf("here! %s:%u\n", __FILE__, __LINE__);
 }
 
 void DialogRunner_NotifyAutoSave(void)
 {
+    printf("here! %s:%u\n", __FILE__, __LINE__);
     RSDK_THIS(DialogRunner);
+    printf("here! %s:%u\n", __FILE__, __LINE__);
 
     String string;
+    printf("here! %s:%u\n", __FILE__, __LINE__);
     INIT_STRING(string);
+    printf("here! %s:%u\n", __FILE__, __LINE__);
+
     if (DialogRunner->isAutoSaving) {
+        printf("here! %s:%u\n", __FILE__, __LINE__);
         if (!UIDialog->activeDialog) {
+            printf("here! %s:%u\n", __FILE__, __LINE__);
             Localization_GetString(&string, STR_AUTOSAVENOTIF);
+            printf("here! %s:%u\n", __FILE__, __LINE__);
             EntityUIDialog *dialog = UIDialog_CreateDialogOk(&string, DialogRunner_NotifyAutoSave_CB, true);
+            printf("here! %s:%u\n", __FILE__, __LINE__);
             dialog->useAltColor    = true;
         }
     }
     else {
+        printf("here! %s:%u\n", __FILE__, __LINE__);
         DialogRunner->activeCallback = NULL;
+        printf("here! %s:%u\n", __FILE__, __LINE__);
         destroyEntity(self);
     }
 }

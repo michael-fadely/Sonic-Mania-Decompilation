@@ -37,14 +37,14 @@ void Zone_LateUpdate(void)
             SceneInfo->timeEnabled  = false;
             RSDK.PlaySfx(Player->sfxHurt, false, 0xFF);
 
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
             EntityCompetitionSession *session = CompetitionSession_GetSession();
 #endif
 
             foreach_active(Player, player)
             {
                 bool32 canDie = true;
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
                 if (globals->gameMode == MODE_COMPETITION && (session->finishState[player->playerID]) == FINISHTYPE_PASSEDSIGNPOST)
                     canDie = false;
 #endif
@@ -252,7 +252,6 @@ void Zone_StageLoad(void)
     RSDK.ResetEntitySlot(SLOT_ZONE, Zone->classID, NULL);
 
     // Setup Competition options (or ensure they're not active if not in competition mode)
-    EntityCompetitionSession *session = CompetitionSession_GetSession();
     if (globals->gameMode == MODE_COMPETITION) {
         if (RSDK.CheckSceneFolder("Puyo")) {
             if (globals->gameMode == MODE_COMPETITION) {
@@ -268,8 +267,11 @@ void Zone_StageLoad(void)
             }
         }
         else {
+#if !defined(_arch_dreamcast)
+            EntityCompetitionSession *session = CompetitionSession_GetSession();
             session->playerCount = CLAMP(session->playerCount, 2, PLAYER_COUNT);
             RSDK.SetVideoSetting(VIDEOSETTING_SCREENCOUNT, session->playerCount);
+#endif
         }
     }
     else {
@@ -832,15 +834,19 @@ void Zone_State_FadeIn(void)
 void Zone_State_FadeOut_Competition(void)
 {
     RSDK_THIS(Zone);
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+#endif
 
     self->timer += self->fadeSpeed;
     if (self->timer > 1024) {
+#if !defined(_arch_dreamcast)
         session->completedStages[session->stageIndex] = true;
 #if MANIA_USE_PLUS
         session->matchID = session->prevMatchID + 1;
 #else
         session->matchID++;
+#endif
 #endif
 
         RSDK.SetScene("Presentation", "Menu");
@@ -1303,6 +1309,7 @@ void Zone_State_SwapPlayers(void)
             RSDK.PlaySfx(Zone->sfxFail, false, 255);
         }
         else {
+#if !defined(_arch_dreamcast)
             EntityCompetitionSession *session = CompetitionSession_GetSession();
 
             uint8 playerIDs = 0;
@@ -1344,6 +1351,7 @@ void Zone_State_SwapPlayers(void)
                     }
                     break;
             }
+#endif
 #else
         Zone->playerSwapEnabled = true;
         for (int32 p = 0; p < Player->playerCount; ++p) {

@@ -491,6 +491,7 @@ void HUD_StageLoad(void)
 
     HUD->showTAPrompt = false;
 
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     if (globals->gameMode == MODE_COMPETITION) {
         HUD->screenBorderType[0] = session->screenBorderType[0];
@@ -498,6 +499,7 @@ void HUD_StageLoad(void)
         HUD->screenBorderType[2] = session->screenBorderType[2];
         HUD->screenBorderType[3] = session->screenBorderType[3];
     }
+#endif
 #endif
 }
 

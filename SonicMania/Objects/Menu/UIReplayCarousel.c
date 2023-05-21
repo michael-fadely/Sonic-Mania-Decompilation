@@ -13,7 +13,9 @@ ObjectUIReplayCarousel *UIReplayCarousel;
 void UIReplayCarousel_Update(void)
 {
     RSDK_THIS(UIReplayCarousel);
+#if !defined(_arch_dreamcast)
     self->sortedRowCount = API.GetSortedUserDBRowCount(globals->replayTableID);
+#endif
     UIReplayCarousel_SetupButtonCallbacks();
     UIReplayCarousel_HandleTouchPositions();
     self->active = ACTIVE_NORMAL;
@@ -227,12 +229,15 @@ void UIReplayCarousel_SetupButtonCallbacks(void)
     void *state = self->stateDraw;
 
     if (self->sortedRowCount) {
+#if !defined(_arch_dreamcast)
         if (!API.GetUserDBRowsChanged(globals->replayTableID) && globals->replayTableLoaded == STATUS_OK) {
             self->stateDraw       = UIReplayCarousel_Draw_Carousel;
             self->processButtonCB = UIReplayCarousel_ProcessButtonCB;
             self->touchCB         = UIButton_ProcessTouchCB_Multi;
         }
-        else {
+        else
+#endif
+        {
             self->stateDraw       = UIReplayCarousel_Draw_Loading;
             self->touchCB         = StateMachine_None;
             self->processButtonCB = StateMachine_None;
@@ -299,6 +304,7 @@ void UIReplayCarousel_SetupVisibleReplayButtons(void)
             int32 id = i + self->visibleReplayOffset;
             if (id >= self->sortedRowCount)
                 break;
+#if !defined(_arch_dreamcast)
             int32 row    = API.GetSortedUserDBRowID(globals->replayTableID, id);
             uint8 zoneID = 0xFF;
             API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT8, "zoneID", &zoneID);
@@ -314,6 +320,7 @@ void UIReplayCarousel_SetupVisibleReplayButtons(void)
                 RSDK.InitString(&self->createdAtText[i], buffer, 0);
                 RSDK.SetSpriteString(UIWidgets->fontFrames, 0, &self->createdAtText[i]);
             }
+#endif
         }
     }
 }
@@ -533,12 +540,14 @@ void UIReplayCarousel_Draw_Carousel(void)
         uint8 characterID = 0;
         uint8 encore      = 0;
 
+#if !defined(_arch_dreamcast)
         int32 row = API.GetSortedUserDBRowID(globals->replayTableID, id);
         API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT32, "score", &score);
         API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT8, "zoneID", &zoneID);
         API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT8, "act", &act);
         API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT8, "characterID", &characterID);
         API.GetUserDBValue(globals->replayTableID, row, DBVAR_UINT8, "encore", &encore);
+#endif
         if (id == self->curReplayID && parent->active == ACTIVE_ALWAYS) {
             int32 palRow = (zoneID % 12) >> 3;
             int32 bankID = 0;

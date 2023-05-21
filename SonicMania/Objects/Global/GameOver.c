@@ -161,7 +161,7 @@ void GameOver_State_EnterLetters(void)
     self->scale.y = self->scale.x;
 
     if (self->timer == 0) {
-#if MANIA_USE_PLUS
+#if MANIA_USE_PLUS && !defined(_arch_dreamcast)
         EntityCompetitionSession *session = CompetitionSession_GetSession();
         if (globals->gameMode != MODE_COMPETITION) {
             Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
@@ -220,6 +220,7 @@ void GameOver_State_EnterLetters(void)
 #if MANIA_USE_PLUS
 void GameOver_State_WaitComp(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(GameOver);
 
     EntityCompetition *manager        = Competition->sessionManager;
@@ -241,6 +242,7 @@ void GameOver_State_WaitComp(void)
 
     if (gameOverCount >= session->playerCount - 1 || deathCount == session->playerCount || Zone->gotTimeOver)
         self->state = GameOver_State_Wait;
+#endif
 }
 #endif
 
@@ -303,8 +305,9 @@ void GameOver_State_ExitLetters(void)
     if (self->timer == 90) {
         self->timer = 0;
 
-        EntityCompetitionSession *session = CompetitionSession_GetSession();
         if (globals->gameMode == MODE_COMPETITION) {
+#if !defined(_arch_dreamcast)
+            EntityCompetitionSession *session = CompetitionSession_GetSession();
             session->completedStages[session->stageIndex] = true;
 #if MANIA_USE_PLUS
             session->matchID = session->prevMatchID + 1;
@@ -314,6 +317,7 @@ void GameOver_State_ExitLetters(void)
             RSDK.SetVideoSetting(VIDEOSETTING_SCREENCOUNT, 1);
             RSDK.SetScene("Presentation", "Menu");
             RSDK.LoadScene();
+#endif
         }
         else if (self->animator.animationID != 6) {
             StarPost->storedMS      = 0;

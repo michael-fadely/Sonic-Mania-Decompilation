@@ -362,11 +362,12 @@ void SignPost_CheckTouch(void)
                             RSDK.PlaySfx(SignPost->sfxSignPost2P, false, 255);
                         }
 
-                        EntityCompetitionSession *session = CompetitionSession_GetSession();
                         EntityCompetition *manager        = Competition->sessionManager;
                         if (!manager)
                             manager = Competition->sessionManager = CREATE_ENTITY(Competition, NULL, self->position.x, self->position.y);
 
+#if !defined(_arch_dreamcast)
+                        EntityCompetitionSession *session = CompetitionSession_GetSession();
                         manager->playerFinished[player->playerID]    = true;
                         session->rings[player->playerID]             = player->rings;
                         session->time[player->playerID].minutes      = SceneInfo->minutes;
@@ -374,6 +375,7 @@ void SignPost_CheckTouch(void)
                         session->time[player->playerID].milliseconds = SceneInfo->milliseconds;
                         session->score[player->playerID]             = player->score;
                         session->lives[player->playerID]             = player->lives;
+#endif
                         CompSession_DeriveWinner(player->playerID, FINISHTYPE_PASSEDSIGNPOST);
 
                         self->activePlayers |= (1 << p);
