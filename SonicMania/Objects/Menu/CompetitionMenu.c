@@ -129,6 +129,7 @@ void CompetitionMenu_SetupActions(void)
 
 void CompetitionMenu_HandleMenuReturn(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
     if (session->inMatch) {
@@ -176,6 +177,7 @@ void CompetitionMenu_HandleMenuReturn(void)
             }
         }
     }
+#endif
 }
 
 int32 CompetitionMenu_HandleUnlocks(void)
@@ -310,7 +312,9 @@ void CompetitionMenu_SetupSplitScreenChoices(int32 playerCount)
 }
 void CompetitionMenu_SetupSplitScreen(int32 mode)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+#endif
     int32 startVert_3P[15];
     uint8 startVert_2P[10];
 
@@ -349,6 +353,7 @@ void CompetitionMenu_SetupSplitScreen(int32 mode)
 
     RSDK.SetScreenVertices(startVert_2P[mode], startVert_2P[5 + mode], startVert_3P[mode], startVert_3P[5 + mode], startVert_3P[10 + mode]);
 
+#if !defined(_arch_dreamcast)
     switch (mode) {
         case 0: // 2P (Streched)
         case 1: // 2P (Bordered)
@@ -377,10 +382,12 @@ void CompetitionMenu_SetupSplitScreen(int32 mode)
 
         default: break;
     }
+#endif
 }
 
 void CompetitionMenu_SetupResultsUI(EntityUIControl *roundControl)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
     int32 offsets[] = { -580000, 0x580000, 0x0, 0x0, -0x7A0000, 0x000000, 0x7A0000, 0x000000, -0x9C0000, -0x340000, 0x340000, 0x9C0000 };
@@ -396,6 +403,7 @@ void CompetitionMenu_SetupResultsUI(EntityUIControl *roundControl)
             button->position.x = roundControl->position.x + offsets[offsetPtr + p];
         }
     }
+#endif
 }
 
 void CompetitionMenu_GotoCompRules(void)
@@ -479,6 +487,7 @@ void CompetitionMenu_Rules_MenuSetupCB(void)
 
 void CompetitionMenu_StartMatch(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     EntityMenuParam *param            = MenuParam_GetParam();
 
@@ -518,12 +527,14 @@ void CompetitionMenu_StartMatch(void)
     globals->itemMode = session->itemMode;
 
     RSDK.LoadScene();
+#endif
 }
 
 void CompetitionMenu_ZoneButtonActionCB(void) { MenuSetup_StartTransition(CompetitionMenu_StartMatch, 32); }
 
 void CompetitionMenu_RulesButton_ActionCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityUIControl *control = CompetitionMenu->competitionControl;
     if (!API.CheckDLC(DLC_PLUS))
         control = CompetitionMenu->competitionControl_Legacy;
@@ -585,12 +596,14 @@ void CompetitionMenu_RulesButton_ActionCB(void)
     CompetitionMenu_HandleUnlocks();
 
     UIControl_MatchMenuTag("Competition Zones");
+#endif
 }
 
 void CompetitionMenu_GotoCompTotal(void) { UIControl_MatchMenuTag("Competition Total"); }
 
 void CompetitionMenu_Round_ProcessInputCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     if (UIControl->anyConfirmPress) {
         bool32 toCompTotal = false;
@@ -622,10 +635,12 @@ void CompetitionMenu_Round_ProcessInputCB(void)
         RSDK.PlaySfx(UIWidgets->sfxAccept, false, 255);
         UIControl->inputLocked = true;
     }
+#endif
 }
 
 void CompetitionMenu_Round_MenuSetupCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     EntityUIControl *roundControl     = CompetitionMenu->compRoundControl;
     CompetitionMenu_SetupResultsUI(roundControl);
@@ -749,12 +764,14 @@ void CompetitionMenu_Round_MenuSetupCB(void)
         announcer->playerID        = 0;
         announcer->timer           = 0;
     }
+#endif
 }
 
 void CompetitionMenu_GotoCompetition(void) { UIControl_MatchMenuTag(API.CheckDLC(DLC_PLUS) ? "Competition" : "Competition Legacy"); }
 
 void CompetitionMenu_Results_ProcessInputCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
     if (UIControl->anyConfirmPress) {
         int32 mostWins = 0;
@@ -780,10 +797,12 @@ void CompetitionMenu_Results_ProcessInputCB(void)
         RSDK.PlaySfx(UIWidgets->sfxAccept, false, 255);
         UIControl->inputLocked = true;
     }
+#endif
 }
 
 void CompetitionMenu_Results_MenuSetupCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityUIControl *totalControl     = CompetitionMenu->compTotalControl;
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
@@ -851,6 +870,7 @@ void CompetitionMenu_Results_MenuSetupCB(void)
             highlight[r] = ((1 << p) & session->matchWinner[r]);
         }
     }
+#endif
 }
 
 void CompetitionMenu_Results_MenuUpdateCB(void)

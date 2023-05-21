@@ -798,8 +798,10 @@ void ItemBox_GivePowerup(void)
 void ItemBox_Break(EntityItemBox *itemBox, EntityPlayer *player)
 {
     if (globals->gameMode == MODE_COMPETITION) {
+#if !defined(_arch_dreamcast)
         EntityCompetitionSession *session = CompetitionSession_GetSession();
         ++session->items[RSDK.GetEntitySlot(player)];
+#endif
     }
 
     RSDK.CreateEntity(TYPE_BLANK, NULL, itemBox->position.x, itemBox->position.y);

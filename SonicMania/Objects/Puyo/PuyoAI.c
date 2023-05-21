@@ -1,4 +1,4 @@
-// ---------------------------------------------------------------------
+// -------------------------------cur--------------------------------------
 // RSDK Project: Sonic Mania
 // Object Description: PuyoAI Object
 // Object Author: Christian Whitehead/Simon Thomley/Hunter Bridges

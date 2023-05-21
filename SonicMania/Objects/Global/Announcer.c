@@ -125,6 +125,10 @@ void Announcer_Draw_Countdown(void)
 
     if (self->playerID > 0) {
         self->inkEffect                   = INK_NONE;
+
+#if defined(_arch_dreamcast)
+        int32 frame = 0;
+#else
         EntityCompetitionSession *session = CompetitionSession_GetSession();
 
         int32 frame = 0;
@@ -138,6 +142,7 @@ void Announcer_Draw_Countdown(void)
             case ID_RAY: frame = 4; break;
 #endif
         }
+#endif
         RSDK.SetSpriteAnimation(Announcer->aniFrames, 2, &self->playerIconAnimator, true, frame);
 
         drawPos.x = ScreenInfo->center.x << 16;

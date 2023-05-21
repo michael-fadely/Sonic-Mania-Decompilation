@@ -242,6 +242,7 @@ void TimeAttackMenu_HandleMenuReturn(void)
         replayControl->buttonID = 1; // Select Replay Carousel
         UIButton_SetChoiceSelectionWithCB(replayControl->buttons[0], param->selectedReplay & 0xFF);
 
+#if !defined(_arch_dreamcast)
         EntityUIReplayCarousel *carousel = TimeAttackMenu->replayCarousel;
         int32 replayCount                = API.GetSortedUserDBRowCount(globals->replayTableID);
         int32 targetID                   = API.GetUserDBRowByID(globals->replayTableID, param->replayUUID);
@@ -256,6 +257,7 @@ void TimeAttackMenu_HandleMenuReturn(void)
             carousel->curReplayID = param->replayID;
         else
             carousel->curReplayID = replayID;
+#endif
     }
 }
 
@@ -275,6 +277,7 @@ void TimeAttackMenu_DeleteReplayActionCB(void)
     EntityUIControl *replayControl   = TimeAttackMenu->replaysControl;
     EntityUIReplayCarousel *carousel = TimeAttackMenu->replayCarousel;
 
+#if !defined(_arch_dreamcast)
     if (replayControl->buttonID == 1 && carousel->stateDraw == UIReplayCarousel_Draw_Carousel
         && API.GetSortedUserDBRowCount(globals->replayTableID)) {
         String string;
@@ -283,14 +286,17 @@ void TimeAttackMenu_DeleteReplayActionCB(void)
         Localization_GetString(&string, STR_DELETEREPLAY);
         UIDialog_CreateDialogYesNo(&string, TimeAttackMenu_ConfirmDeleteReplay_Yes_CB, StateMachine_None, true, true);
     }
+#endif
 }
 
 void TimeAttackMenu_ConfirmDeleteReplay_Yes_CB(void)
 {
     EntityUIReplayCarousel *carousel = TimeAttackMenu->replayCarousel;
 
+#if !defined(_arch_dreamcast)
     int32 row = API.GetSortedUserDBRowID(globals->replayTableID, carousel->curReplayID);
     ReplayDB_DeleteReplay(row, TimeAttackMenu_DeleteReplayCB, false);
+#endif
 }
 
 void TimeAttackMenu_DeleteReplayCB(bool32 success)
@@ -299,9 +305,11 @@ void TimeAttackMenu_DeleteReplayCB(bool32 success)
 
     EntityUIReplayCarousel *carousel = TimeAttackMenu->replayCarousel;
 
+#if !defined(_arch_dreamcast)
     int32 count = API.GetSortedUserDBRowCount(globals->replayTableID) - 1;
     if (carousel->curReplayID > count)
         carousel->curReplayID = count;
+#endif
 }
 
 void TimeAttackMenu_MenuUpdateCB_LB(void)
@@ -396,6 +404,7 @@ void TimeAttackMenu_WatchReplay(int32 row, bool32 showGhost)
     API_ResetInputSlotAssignments();
     API_AssignInputSlotToDevice(CONT_P1, id);
 
+#if !defined(_arch_dreamcast)
     uint32 uuid = API.GetUserDBRowUUID(globals->replayTableID, row);
     LogHelpers_Print("Go_Replay(%d, %d)", row, showGhost);
     LogHelpers_Print("uuid: %08X", uuid);
@@ -448,12 +457,14 @@ void TimeAttackMenu_WatchReplay(int32 row, bool32 showGhost)
     memset(globals->replayTempRBuffer, 0, sizeof(globals->replayTempRBuffer));
     memset(globals->replayReadBuffer, 0, sizeof(globals->replayReadBuffer));
     ReplayRecorder_Buffer_LoadFile(fileName, globals->replayTempRBuffer, TimeAttackMenu_ReplayLoad_CB);
+#endif
 }
 
 void TimeAttackMenu_ReplayLoad_CB(bool32 success)
 {
     UIWaitSpinner_FinishWait();
 
+#if !defined(_arch_dreamcast)
     int32 strID = 0;
     if (success) {
         Replay *replayPtr = (Replay *)globals->replayTempRBuffer;
@@ -481,6 +492,7 @@ void TimeAttackMenu_ReplayLoad_CB(bool32 success)
         if (popover)
             popover->parent->selectionDisabled = false;
     }
+#endif
 }
 
 void TimeAttackMenu_WatchReplayActionCB_ReplaysMenu(void)
@@ -495,8 +507,10 @@ void TimeAttackMenu_WatchReplayActionCB_ReplaysMenu(void)
     param->replayRankID = button->selection;
     param->replayID     = carousel->curReplayID;
 
+#if !defined(_arch_dreamcast)
     int32 id = API.GetSortedUserDBRowID(globals->replayTableID, carousel->curReplayID);
     TimeAttackMenu_WatchReplay(id, false);
+#endif
 }
 
 void TimeAttackMenu_ChallengeReplayActionCB_ReplaysMenu(void)
@@ -511,8 +525,10 @@ void TimeAttackMenu_ChallengeReplayActionCB_ReplaysMenu(void)
     param->replayRankID = button->selection;
     param->replayID     = carousel->curReplayID;
 
+#if !defined(_arch_dreamcast)
     int32 id = API.GetSortedUserDBRowID(globals->replayTableID, carousel->curReplayID);
     TimeAttackMenu_WatchReplay(id, true);
+#endif
 }
 
 void TimeAttackMenu_WatchReplayCB_RanksMenu(void)
@@ -522,6 +538,7 @@ void TimeAttackMenu_WatchReplayCB_RanksMenu(void)
     EntityUIRankButton *button = (EntityUIRankButton *)popover->storedEntity;
     EntityUIControl *parent    = (EntityUIControl *)button->parent;
 
+#if !defined(_arch_dreamcast)
     int32 uuid = API.GetUserDBRowByID(globals->replayTableID, button->replayID);
     if (uuid != -1) {
         RSDK.GetCString(param->menuTag, &parent->tag);
@@ -529,6 +546,7 @@ void TimeAttackMenu_WatchReplayCB_RanksMenu(void)
         param->inTimeAttack  = true;
         TimeAttackMenu_WatchReplay(uuid, false);
     }
+#endif
 }
 
 void TimeAttackMenu_ChallengeReplayCB_RanksMenu(void)
@@ -538,6 +556,7 @@ void TimeAttackMenu_ChallengeReplayCB_RanksMenu(void)
     EntityUIRankButton *button = (EntityUIRankButton *)popover->storedEntity;
     EntityUIControl *parent    = (EntityUIControl *)button->parent;
 
+#if !defined(_arch_dreamcast)
     int32 uuid = API.GetUserDBRowByID(globals->replayTableID, button->replayID);
     if (uuid != -1) {
         RSDK.GetCString(param->menuTag, &parent->tag);
@@ -545,6 +564,7 @@ void TimeAttackMenu_ChallengeReplayCB_RanksMenu(void)
         param->inTimeAttack  = true;
         TimeAttackMenu_WatchReplay(uuid, true);
     }
+#endif
 }
 
 void TimeAttackMenu_LoadScene_Fadeout(void)
@@ -555,8 +575,10 @@ void TimeAttackMenu_LoadScene_Fadeout(void)
 
 void TimeAttackMenu_MenuSetupCB_Replay(void)
 {
+#if !defined(_arch_dreamcast)
     if (API.GetUserDBRowsChanged(globals->replayTableID))
         TimeAttackMenu_SortReplayChoiceCB();
+#endif
 }
 
 void TimeAttackMenu_MenuUpdateCB_Replay(void)
@@ -568,8 +590,10 @@ void TimeAttackMenu_MenuUpdateCB_Replay(void)
         carousel->curReplayID = -1;
 
     EntityUIButtonPrompt *prompt = TimeAttackMenu->replayPrompt;
+#if !defined(_arch_dreamcast)
     if (prompt)
         prompt->visible = API.GetSortedUserDBRowCount(globals->replayTableID) != 0;
+#endif
 }
 
 void TimeAttackMenu_MenuUpdateCB(void)
@@ -615,12 +639,14 @@ void TimeAttackMenu_SortReplayChoiceCB(void)
     EntityUIControl *control         = TimeAttackMenu->replaysControl;
     EntityUIReplayCarousel *carousel = TimeAttackMenu->replayCarousel;
 
+#if !defined(_arch_dreamcast)
     API.SetupUserDBRowSorting(globals->replayTableID);
 
     if (control->buttons[0]->selection == 1)
         API.SortDBRows(globals->replayTableID, DBVAR_UINT32, "zoneSortVal", false);
     else
         API.SortDBRows(globals->replayTableID, 0, NULL, true);
+#endif
 
     carousel->stateDraw = UIReplayCarousel_Draw_Loading;
 }
@@ -673,9 +699,11 @@ void TimeAttackMenu_StartTAAttempt(void)
     param->inTimeAttack  = true;
     param->isEncoreMode  = TimeAttackMenu->encoreMode;
 
+#if !defined(_arch_dreamcast)
     Replay *replayPtr = (Replay *)globals->replayReadBuffer;
     if (replayPtr->header.isNotEmpty && replayPtr->header.signature == REPLAY_SIGNATURE)
         memset(globals->replayReadBuffer, 0, sizeof(globals->replayReadBuffer));
+#endif
 
     TimeAttackMenu_LoadScene();
 }

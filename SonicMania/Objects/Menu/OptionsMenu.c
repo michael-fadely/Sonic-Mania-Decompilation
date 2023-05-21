@@ -832,9 +832,12 @@ void OptionsMenu_AreYouSureDlg_YesCB_EraseReplays(void)
         UIWaitSpinner_StartWait();
     }
 
+#if !defined(_arch_dreamcast)
     API.SetupUserDBRowSorting(globals->replayTableID);
+#endif
     API.SetupUserDBRowSorting(globals->taTableID);
 
+#if !defined(_arch_dreamcast)
     if (API.GetSortedUserDBRowCount(globals->replayTableID) <= 0) {
         ReplayDB_SaveDB(OptionsMenu_EraseReplaysCB);
     }
@@ -842,6 +845,7 @@ void OptionsMenu_AreYouSureDlg_YesCB_EraseReplays(void)
         int32 row = API.GetSortedUserDBRowID(globals->replayTableID, 0);
         ReplayDB_DeleteReplay(row, OptionsMenu_EraseReplaysCB, true);
     }
+#endif
 }
 
 void OptionsMenu_EraseReplaysCB(bool32 success) { TimeAttackData_SaveDB(OptionsMenu_EraseSaveDataCB); }

@@ -212,7 +212,9 @@ typedef struct {
     int32 itemMode;
     int32 suppressTitlecard;
     int32 suppressAutoMusic;
+#if !defined(_arch_dreamcast)
     int32 competitionSession[0x4000];
+#endif
     int32 medalMods;
     int32 parallaxOffset[0x100];
     int32 enableIntro;
@@ -247,11 +249,13 @@ typedef struct {
     int32 initCoolBonus;
     int32 coolBonus[4];
 #if MANIA_USE_PLUS
+#if !defined(_arch_dreamcast)
     int32 replayWriteBuffer[0x40000];
     int32 replayReadBuffer[0x40000];
     int32 replayTempWBuffer[0x40000];
     int32 replayTempRBuffer[0x40000];
     int32 replayTableID;
+#endif
     int32 replayTableLoaded;
     int32 taTableID;
     int32 taTableLoaded;

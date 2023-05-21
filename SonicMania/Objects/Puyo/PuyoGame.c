@@ -72,7 +72,9 @@ void PuyoGame_SetupStartingEntities(void)
     RSDK_THIS(PuyoGame);
 
     EntityMenuParam *param            = MenuParam_GetParam();
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+#endif
 
     ScreenInfo->position.x = (self->position.x >> 16) - ScreenInfo->center.x;
     ScreenInfo->position.y = (self->position.y >> 16) - ScreenInfo->center.y;
@@ -83,8 +85,10 @@ void PuyoGame_SetupStartingEntities(void)
         if (score->counter) {
             PuyoGame->score2[playerID] = score;
 
+#if !defined(_arch_dreamcast)
             if (param->puyoSelection == PUYO_SELECTION_TIE_BREAKER)
                 score->score = session->wins[playerID];
+#endif
         }
         else {
             PuyoGame->score1[playerID] = score;
@@ -374,13 +378,17 @@ void PuyoGame_State_FadeToMenu(void)
 {
     RSDK_THIS(PuyoGame);
 
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+#endif
     EntityMenuParam *param            = MenuParam_GetParam();
 
     EntityFXFade *fxFade = PuyoGame->fxFade;
     if (fxFade->timer == 512) {
+#if !defined(_arch_dreamcast)
         if (param->puyoSelection == PUYO_SELECTION_TIE_BREAKER)
             session->wins[self->matchWinner]++;
+#endif
 
         destroyEntity(self);
 

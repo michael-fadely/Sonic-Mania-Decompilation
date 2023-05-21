@@ -24,6 +24,7 @@ void ReplayDB_StageLoad(void) {}
 
 void ReplayDB_CreateDB(void)
 {
+#if !defined(_arch_dreamcast)
     globals->replayTableID = API.InitUserDB("ReplayDB.bin", DBVAR_UINT32, "score", DBVAR_UINT8, "zoneID", DBVAR_UINT8, "act", DBVAR_UINT8,
                                             "characterID", DBVAR_UINT8, "encore", DBVAR_UINT32, "zoneSortVal", NULL);
 
@@ -31,10 +32,12 @@ void ReplayDB_CreateDB(void)
         globals->replayTableLoaded = STATUS_ERROR;
     else
         globals->replayTableLoaded = STATUS_OK;
+#endif
 }
 
 void ReplayDB_LoadDB(void (*callback)(bool32 success))
 {
+#if !defined(_arch_dreamcast)
     if ((globals->replayTableID != -1 && globals->replayTableLoaded == STATUS_OK) || globals->replayTableLoaded == STATUS_CONTINUE) {
         if (callback)
             callback(false);
@@ -52,10 +55,12 @@ void ReplayDB_LoadDB(void (*callback)(bool32 success))
             globals->replayTableLoaded = STATUS_ERROR;
         }
     }
+#endif
 }
 
 void ReplayDB_SaveDB(void (*callback)(bool32 success))
 {
+#if !defined(_arch_dreamcast)
     if (API_GetNoSave() || globals->replayTableID == (uint16)-1 || globals->replayTableLoaded != STATUS_OK) {
         if (callback)
             callback(false);
@@ -66,10 +71,12 @@ void ReplayDB_SaveDB(void (*callback)(bool32 success))
         ReplayDB->saveCallback = callback;
         API.SaveUserDB(globals->replayTableID, ReplayDB_SaveDBCallback);
     }
+#endif
 }
 
 uint32 ReplayDB_AddReplay(uint8 zoneID, uint8 act, uint8 characterID, int32 score, uint8 encore)
 {
+#if !defined(_arch_dreamcast)
     if (globals->replayTableLoaded == STATUS_OK) {
         uint32 rowID       = API.AddUserDBRow(globals->replayTableID);
         int32 zoneStortVal = (score & 0x3FFFFFF) | (((zoneID << 2) | (act & 1) | ((encore & 1) << 1)) << 26);
@@ -93,12 +100,14 @@ uint32 ReplayDB_AddReplay(uint8 zoneID, uint8 act, uint8 characterID, int32 scor
 
         return rowID;
     }
+#endif
 
     return -1;
 }
 
 void ReplayDB_DeleteReplay(int32 row, void (*callback)(bool32 success), bool32 useAltCB)
 {
+#if !defined(_arch_dreamcast)
     int32 id       = API.GetUserDBRowUUID(globals->replayTableID, row);
     int32 replayID = 0;
 
@@ -123,24 +132,30 @@ void ReplayDB_DeleteReplay(int32 row, void (*callback)(bool32 success), bool32 u
         API.DeleteUserFile(filename, ReplayDB_DeleteReplay_CB);
     else
         API.DeleteUserFile(filename, ReplayDB_DeleteReplaySave2_CB);
+#endif
 }
 
 void ReplayDB_DeleteReplay_CB(int32 status)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("DeleteReplay_CB(%d)", status);
 
     API.SaveUserDB(globals->replayTableID, ReplayDB_DeleteReplaySave_CB);
+#endif
 }
 
 void ReplayDB_DeleteReplaySave_CB(int32 status)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("DeleteReplaySave_CB(%d)", status);
 
     API.SaveUserDB(globals->taTableID, ReplayDB_DeleteReplaySave2_CB);
+#endif
 }
 
 void ReplayDB_DeleteReplaySave2_CB(int32 status)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("DeleteReplaySave2_CB(%d)", status);
 
     if (ReplayDB->deleteCallback) {
@@ -153,10 +168,12 @@ void ReplayDB_DeleteReplaySave2_CB(int32 status)
         ReplayDB->deleteCallback = NULL;
         ReplayDB->deleteEntity   = NULL;
     }
+#endif
 }
 
 void ReplayDB_LoadDBCallback(int32 status)
 {
+#if !defined(_arch_dreamcast)
     if (status == STATUS_OK) {
         globals->replayTableLoaded = STATUS_OK;
         API.SetupUserDBRowSorting(globals->replayTableID);
@@ -179,10 +196,12 @@ void ReplayDB_LoadDBCallback(int32 status)
         ReplayDB->loadCallback = NULL;
         ReplayDB->loadEntity   = NULL;
     }
+#endif
 }
 
 void ReplayDB_SaveDBCallback(int32 status)
 {
+#if !defined(_arch_dreamcast)
     if (ReplayDB->saveCallback) {
         Entity *store = SceneInfo->entity;
         if (ReplayDB->saveEntity)
@@ -193,6 +212,7 @@ void ReplayDB_SaveDBCallback(int32 status)
         ReplayDB->saveCallback = NULL;
         ReplayDB->saveEntity   = NULL;
     }
+#endif
 }
 
 void ReplayDB_LoadCallback(bool32 success) {}

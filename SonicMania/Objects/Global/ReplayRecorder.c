@@ -52,6 +52,7 @@ void ReplayRecorder_LateUpdate(void)
 
 void ReplayRecorder_StaticUpdate(void)
 {
+#if !defined(_arch_dreamcast)
     if (globals->gameMode == MODE_TIMEATTACK) {
         if (SceneInfo->state & ENGINESTATE_REGULAR)
             ++ReplayRecorder->frameCounter;
@@ -126,18 +127,22 @@ void ReplayRecorder_StaticUpdate(void)
             }
         }
     }
+#endif
 }
 
 void ReplayRecorder_Draw(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     if (self->isGhostPlayback)
         ReplayRecorder_DrawGhostDisplay();
+#endif
 }
 
 void ReplayRecorder_Create(void *data)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     self->active          = ACTIVE_NEVER;
@@ -147,10 +152,12 @@ void ReplayRecorder_Create(void *data)
     self->drawFX          = FX_FLIP;
     self->ghostAlpha      = 0x100;
     self->visible         = globals->gameMode == MODE_TIMEATTACK;
+#endif
 }
 
 void ReplayRecorder_StageLoad(void)
 {
+#if !defined(_arch_dreamcast)
     ReplayRecorder->replayID    = 0;
     ReplayRecorder->replayRowID = -1;
 
@@ -215,10 +222,12 @@ void ReplayRecorder_StageLoad(void)
             LogHelpers_Print("CharID: %08x", globals->playerID);
         }
     }
+#endif
 }
 
 void ReplayRecorder_TitleCardCB(void)
 {
+#if !defined(_arch_dreamcast)
     Replay *buffer = NULL;
     if (RSDK.GetEntitySlot(ReplayRecorder->playbackManager) == SLOT_REPLAYRECORDER_RECORD)
         buffer = ReplayRecorder->recordBuffer;
@@ -229,17 +238,21 @@ void ReplayRecorder_TitleCardCB(void)
         ReplayRecorder->startRecording = true;
     if (buffer->header.isNotEmpty)
         ReplayRecorder->startPlayback = true;
+#endif
 }
 
 void ReplayRecorder_Resume(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Resume()");
     recorder->paused          = false;
     recorder->player->visible = true;
+#endif
 }
 
 void ReplayRecorder_StartCB(void)
 {
+#if !defined(_arch_dreamcast)
     if (ReplayRecorder->startedRecording)
         ReplayRecorder->recordingManager->changeFlags = 2; // Passed Gate
 
@@ -252,19 +265,23 @@ void ReplayRecorder_StartCB(void)
     }
 
     ReplayRecorder->passedStartLine = true;
+#endif
 }
 
 void ReplayRecorder_FinishCB(void)
 {
+#if !defined(_arch_dreamcast)
     EntityReplayRecorder *recorder = ReplayRecorder->recordingManager;
     if (ReplayRecorder->startedRecording)
         recorder->replayStopDelay = 120;
 
     ReplayRecorder->reachedGoal = true;
+#endif
 }
 
 void ReplayRecorder_Buffer_Move(void)
 {
+#if !defined(_arch_dreamcast)
     Replay *replayPtr = NULL;
     if (RSDK.GetEntitySlot(ReplayRecorder->recordingManager) == SLOT_REPLAYRECORDER_RECORD)
         replayPtr = ReplayRecorder->recordBuffer;
@@ -281,18 +298,22 @@ void ReplayRecorder_Buffer_Move(void)
             HUD->replaySaveEnabled = true;
         }
     }
+#endif
 }
 
 void ReplayRecorder_SaveReplayDLG_NoCB(void)
 {
+#if !defined(_arch_dreamcast)
     HUD->replaySaveEnabled = true;
 
     ActClear->hasSavedReplay      = false;
     ActClear->disableResultsInput = false;
+#endif
 }
 
 void ReplayRecorder_SaveReplayDLG_YesCB(void)
 {
+#if !defined(_arch_dreamcast)
     ReplayRecorder->replayID    = 0;
     ReplayRecorder->replayRowID = -1;
 
@@ -321,19 +342,23 @@ void ReplayRecorder_SaveReplayDLG_YesCB(void)
         ReplayRecorder_Buffer_SaveFile(fileName, globals->replayTempWBuffer, ReplayRecorder_SaveFile_Replay);
         HUD->replaySaveEnabled = false;
     }
+#endif
 }
 
 void ReplayRecorder_SaveReplayDLG_CB(void)
 {
+#if !defined(_arch_dreamcast)
     String message;
     INIT_STRING(message);
 
     Localization_GetString(&message, STR_SAVEREPLAY);
     UIDialog_CreateDialogYesNo(&message, ReplayRecorder_SaveReplayDLG_YesCB, ReplayRecorder_SaveReplayDLG_NoCB, true, true);
+#endif
 }
 
 void ReplayRecorder_SaveReplay(void)
 {
+#if !defined(_arch_dreamcast)
     Replay *replayPtr = (Replay *)globals->replayTempWBuffer;
 
     if (replayPtr->header.isNotEmpty) {
@@ -352,10 +377,12 @@ void ReplayRecorder_SaveReplay(void)
         LogHelpers_Print("Can't save replay! No data available");
         ActClear->disableResultsInput = false;
     }
+#endif
 }
 
 void ReplayRecorder_SaveFile_Replay(bool32 success)
 {
+#if !defined(_arch_dreamcast)
     if (success) {
         LogHelpers_Print("Replay save successful!");
         ReplayDB_SaveDB(ReplayRecorder_SaveCallback_ReplayDB);
@@ -375,10 +402,12 @@ void ReplayRecorder_SaveFile_Replay(bool32 success)
         ActClear->hasSavedReplay      = false;
         HUD->replaySaveEnabled        = true;
     }
+#endif
 }
 
 void ReplayRecorder_SaveCallback_ReplayDB(bool32 success)
 {
+#if !defined(_arch_dreamcast)
     if (success) {
         if (TimeAttackData->rowID == -1) {
             UIWaitSpinner_FinishWait();
@@ -416,10 +445,12 @@ void ReplayRecorder_SaveCallback_ReplayDB(bool32 success)
         ActClear->hasSavedReplay      = false;
         HUD->replaySaveEnabled        = true;
     }
+#endif
 }
 
 void ReplayRecorder_SaveCallback_TimeAttackDB(bool32 success)
 {
+#if !defined(_arch_dreamcast)
     UIWaitSpinner_FinishWait();
 
     ActClear->disableResultsInput = false;
@@ -437,10 +468,12 @@ void ReplayRecorder_SaveCallback_TimeAttackDB(bool32 success)
 
         HUD->replaySaveEnabled = false;
     }
+#endif
 }
 
 void ReplayRecorder_Buffer_PackInPlace(int32 *tempWriteBuffer)
 {
+#if !defined(_arch_dreamcast)
     Replay *replayPtr = (Replay *)tempWriteBuffer;
 
     LogHelpers_Print("Buffer_PackInPlace(%08x)", tempWriteBuffer);
@@ -475,10 +508,12 @@ void ReplayRecorder_Buffer_PackInPlace(int32 *tempWriteBuffer)
     else {
         LogHelpers_Print("Buffer_Pack ERROR: Signature does not match");
     }
+#endif
 }
 
 void ReplayRecorder_Buffer_Unpack(int32 *readBuffer, int32 *tempReadBuffer)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("Buffer_Unpack(0x%08x, 0x%08x)", readBuffer, tempReadBuffer);
     Replay *replayPtr     = (Replay *)readBuffer;
     Replay *tempReplayPtr = (Replay *)tempReadBuffer;
@@ -514,10 +549,12 @@ void ReplayRecorder_Buffer_Unpack(int32 *readBuffer, int32 *tempReadBuffer)
     else {
         LogHelpers_Print("Buffer_Unpack ERROR: Signature does not match");
     }
+#endif
 }
 
 void ReplayRecorder_Buffer_SaveFile(const char *fileName, int32 *buffer, void (*callback)(bool32 success))
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("Buffer_SaveFile(%s, %08x)", fileName, buffer);
 
     Replay *replayPtr = (Replay *)buffer;
@@ -530,18 +567,22 @@ void ReplayRecorder_Buffer_SaveFile(const char *fileName, int32 *buffer, void (*
         if (callback)
             callback(false);
     }
+#endif
 }
 
 void ReplayRecorder_SaveReplayCallback(int32 status)
 {
+#if !defined(_arch_dreamcast)
     if (ReplayRecorder->saveCallback)
         ReplayRecorder->saveCallback(status == STATUS_OK);
 
     ReplayRecorder->saveCallback = NULL;
+#endif
 }
 
 void ReplayRecorder_Buffer_LoadFile(const char *fileName, void *buffer, void (*callback)(bool32 success))
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("Buffer_LoadFile(%s, %08x)", fileName, buffer);
 
     memset(buffer, 0, sizeof(globals->replayReadBuffer));
@@ -550,20 +591,24 @@ void ReplayRecorder_Buffer_LoadFile(const char *fileName, void *buffer, void (*c
     strcpy(ReplayRecorder->filename, fileName);
 
     API_LoadUserFile(fileName, buffer, sizeof(globals->replayReadBuffer), ReplayRecorder_LoadReplayCallback);
+#endif
 }
 
 void ReplayRecorder_LoadReplayCallback(int32 status)
 {
+#if !defined(_arch_dreamcast)
     if (ReplayRecorder->loadCallback)
         ReplayRecorder->loadCallback(status == STATUS_OK);
 
     ReplayRecorder->loadCallback = NULL;
     ReplayRecorder->fileBuffer   = NULL;
     memset(ReplayRecorder->filename, 0, sizeof(ReplayRecorder->filename));
+#endif
 }
 
 void ReplayRecorder_ConfigureGhost_CB(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(Player);
 
     LogHelpers_Print("ConfigureGhost_CB()");
@@ -578,10 +623,12 @@ void ReplayRecorder_ConfigureGhost_CB(void)
     self->tileCollisions = TILECOLLISION_NONE;
     self->visible        = true;
     self->alpha          = 0xFF;
+#endif
 }
 
 void ReplayRecorder_SetupActions(void)
 {
+#if !defined(_arch_dreamcast)
     for (int32 i = 0; i < 64; ++i) ReplayRecorder->actions[i] = StateMachine_None;
 
     ReplayRecorder->actions[3] = Current_PlayerState_Down;
@@ -643,10 +690,12 @@ void ReplayRecorder_SetupActions(void)
     ReplayRecorder->actions[54] = SizeLaser_PlayerState_ShrinkChibi;
     ReplayRecorder->actions[55] = SizeLaser_PlayerState_GrowGiant;
     ReplayRecorder->actions[56] = SizeLaser_PlayerState_GrowNormal;
+#endif
 }
 
 void ReplayRecorder_SetupWriteBuffer(void)
 {
+#if !defined(_arch_dreamcast)
     EntityMenuParam *param = MenuParam_GetParam();
     Replay *replayPtr      = ReplayRecorder->recordBuffer;
 
@@ -667,10 +716,12 @@ void ReplayRecorder_SetupWriteBuffer(void)
     LogHelpers_Print("act = %d", replayPtr->header.act);
     LogHelpers_Print("isPlusLayout = %d", replayPtr->header.isPlusLayout);
     LogHelpers_Print("oscillation = %d", replayPtr->header.oscillation);
+#endif
 }
 
 void ReplayRecorder_DrawGhostDisplay(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     EntityPlayer *player = self->player;
@@ -742,10 +793,12 @@ void ReplayRecorder_DrawGhostDisplay(void)
             }
         }
     }
+#endif
 }
 
 void ReplayRecorder_Record(EntityReplayRecorder *recorder, EntityPlayer *player)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Record()");
 
     if (player)
@@ -756,10 +809,12 @@ void ReplayRecorder_Record(EntityReplayRecorder *recorder, EntityPlayer *player)
     recorder->stateLate       = ReplayRecorder_Late_RecordFrames;
     recorder->storedAnim      = player->animator.animationID;
     recorder->storedFrame     = player->animator.frameID;
+#endif
 }
 
 void ReplayRecorder_StartRecording(EntityPlayer *player)
 {
+#if !defined(_arch_dreamcast)
     EntityReplayRecorder *recorder = ReplayRecorder->recordingManager;
     LogHelpers_Print("ReplayRecorder_StartRecording()");
 
@@ -770,10 +825,12 @@ void ReplayRecorder_StartRecording(EntityPlayer *player)
     ReplayRecorder_Rewind(recorder);
     ReplayRecorder_SetupWriteBuffer();
     ReplayRecorder_Record(recorder, player);
+#endif
 }
 
 void ReplayRecorder_Play(EntityPlayer *player)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Play()");
     EntityReplayRecorder *recorder = ReplayRecorder->playbackManager;
 
@@ -811,17 +868,21 @@ void ReplayRecorder_Play(EntityPlayer *player)
     else {
         LogHelpers_Print("No replay to play");
     }
+#endif
 }
 
 void ReplayRecorder_Rewind(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Rewind()");
 
     recorder->replayFrame = 0;
+#endif
 }
 
 void ReplayRecorder_Seek(EntityReplayRecorder *recorder, uint32 frame)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Seek(%u)", frame);
 
     recorder->replayFrame = frame;
@@ -855,10 +916,12 @@ void ReplayRecorder_Seek(EntityReplayRecorder *recorder, uint32 frame)
             }
         }
     }
+#endif
 }
 
 void ReplayRecorder_SeekFunc(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     ReplayFrame *framePtr = NULL;
     if (RSDK.GetEntitySlot(recorder) == SLOT_REPLAYRECORDER_RECORD)
         framePtr = ReplayRecorder->recordingFrames;
@@ -871,10 +934,12 @@ void ReplayRecorder_SeekFunc(EntityReplayRecorder *recorder)
             break;
         }
     }
+#endif
 }
 
 void ReplayRecorder_Stop(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Stop()");
 
     recorder->state     = StateMachine_None;
@@ -885,10 +950,12 @@ void ReplayRecorder_Stop(EntityReplayRecorder *recorder)
         if (player->stateInputReplay == ReplayRecorder_PlayBackInput)
             player->stateInputReplay = StateMachine_None;
     }
+#endif
 }
 
 void ReplayRecorder_SetGimmickState(EntityReplayRecorder *recorder, bool32 allowSpriteChanges)
 {
+#if !defined(_arch_dreamcast)
     EntityPlayer *player = recorder->player;
     if (player) {
         player->tailFrames = -1;
@@ -931,10 +998,12 @@ void ReplayRecorder_SetGimmickState(EntityReplayRecorder *recorder, bool32 allow
             }
         }
     }
+#endif
 }
 
 void ReplayRecorder_ForceApplyFramePtr(EntityReplayRecorder *recorder, ReplayFrame *framePtr)
 {
+#if !defined(_arch_dreamcast)
     EntityPlayer *player = recorder->player;
     if (player) {
         player->position.x = framePtr->position.x & 0xFFFF0000;
@@ -948,10 +1017,12 @@ void ReplayRecorder_ForceApplyFramePtr(EntityReplayRecorder *recorder, ReplayFra
         RSDK.SetSpriteAnimation(player->aniFrames, framePtr->anim, &player->animator, true, framePtr->frame);
         player->animator.speed = 0;
     }
+#endif
 }
 
 void ReplayRecorder_ApplyFramePtr(EntityReplayRecorder *recorder, ReplayFrame *framePtr)
 {
+#if !defined(_arch_dreamcast)
     EntityPlayer *player = recorder->player;
     if (player) {
         if (framePtr->changedValues & REPLAY_CHANGED_POS) {
@@ -979,10 +1050,12 @@ void ReplayRecorder_ApplyFramePtr(EntityReplayRecorder *recorder, ReplayFrame *f
 
         player->animator.speed = 0;
     }
+#endif
 }
 
 bool32 ReplayRecorder_CheckPlayerGimmickState(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     EntityPlayer *player = recorder->player;
 
     if (!player || (!RSDK.CheckSceneFolder("MMZ") && !RSDK.CheckSceneFolder("PSZ2")))
@@ -993,12 +1066,13 @@ bool32 ReplayRecorder_CheckPlayerGimmickState(EntityReplayRecorder *recorder)
 
     if (RSDK.CheckSceneFolder("PSZ2"))
         return player->state == Ice_PlayerState_Frozen;
-
+#endif
     return false;
 }
 
 void ReplayRecorder_PackFrame(ReplayFrame *recording)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     uint8 buffer[sizeof(ReplayFrame)];
@@ -1024,10 +1098,12 @@ void ReplayRecorder_PackFrame(ReplayFrame *recording)
 
     ++self->replayFrame;
     ++replayPtr->header.frameCount;
+#endif
 }
 
 void ReplayRecorder_PlayBackInput(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(Player);
 
     EntityReplayRecorder *recorder = ReplayRecorder->playbackManager;
@@ -1089,17 +1165,21 @@ void ReplayRecorder_PlayBackInput(void)
             recorder->storedPos.y = framePtr->position.y;
         }
     }
+#endif
 }
 
 void ReplayRecorder_Pause(EntityReplayRecorder *recorder)
 {
+#if !defined(_arch_dreamcast)
     LogHelpers_Print("ReplayRecorder_Pause()");
 
     recorder->paused = true;
+#endif
 }
 
 void ReplayRecorder_PlayerState_PlaybackReplay(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(Player);
 
     EntityReplayRecorder *recorder = ReplayRecorder->playbackManager;
@@ -1165,10 +1245,12 @@ void ReplayRecorder_PlayerState_PlaybackReplay(void)
             self->timer++;
         }
     }
+#endif
 }
 
 void ReplayRecorder_State_SetupPlayback(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     Replay *replayPtr = NULL;
@@ -1196,6 +1278,7 @@ void ReplayRecorder_State_SetupPlayback(void)
     else if (self->isGhostPlayback) {
         ReplayRecorder_ForceApplyFramePtr(self, frameBuffer);
     }
+#endif
 }
 
 void ReplayRecorder_State_Playback(void) {}
@@ -1204,6 +1287,7 @@ void ReplayRecorder_State_Record(void) {}
 
 void ReplayRecorder_Late_Playback(void)
 {
+#if !defined(_arch_dreamcast)
     RSDK_THIS(ReplayRecorder);
 
     EntityPlayer *player = self->player;
@@ -1249,10 +1333,12 @@ void ReplayRecorder_Late_Playback(void)
     }
 
     ++self->replayFrame;
+#endif
 }
 
 void ReplayRecorder_Late_RecordFrames(void)
 {
+#if !defined(_arch_dreamcast)
     ReplayFrame frame;
 
     RSDK_THIS(ReplayRecorder);
@@ -1394,6 +1480,7 @@ void ReplayRecorder_Late_RecordFrames(void)
         self->state     = StateMachine_None;
         self->stateLate = StateMachine_None;
     }
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -146,8 +146,10 @@ void UIRankButton_SetTimeAttackRank(EntityUIRankButton *button, int32 rank, int3
     button->score    = score;
     button->replayID = 0;
 
+#if !defined(_arch_dreamcast)
     if (replayID && globals->replayTableID != -1 && API.GetUserDBRowByID(globals->replayTableID, replayID) != (uint16)-1)
         button->replayID = replayID;
+#endif
 
     button->leaderboardEntry = NULL;
     button->hasChanged       = false;

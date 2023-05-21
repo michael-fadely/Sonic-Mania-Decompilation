@@ -658,11 +658,13 @@ void Player_Create(void *data)
         Player->powerups = 0;
 
         // Handle Lives/Score setup
-        EntityCompetitionSession *session = CompetitionSession_GetSession();
         if (globals->gameMode == MODE_COMPETITION) {
+#if !defined(_arch_dreamcast)
+            EntityCompetitionSession *session = CompetitionSession_GetSession();
             self->lives    = session->lives[self->playerID];
             self->score    = 0;
             self->score1UP = 50000;
+#endif
         }
         else if (globals->gameMode == MODE_TIMEATTACK) {
             self->lives    = 1;
@@ -856,6 +858,7 @@ void Player_LoadSprites(void)
 }
 void Player_LoadSpritesVS(void)
 {
+#if !defined(_arch_dreamcast)
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
     foreach_all(Player, spawn)
@@ -893,6 +896,7 @@ void Player_LoadSpritesVS(void)
 
         destroyEntity(spawn);
     }
+#endif
 }
 void Player_SaveValues(void)
 {
@@ -918,10 +922,12 @@ void Player_GiveScore(EntityPlayer *player, int32 score)
 }
 void Player_GiveRings(EntityPlayer *player, int32 amount, bool32 playSfx)
 {
-    EntityCompetitionSession *session = CompetitionSession_GetSession();
-
-    if (globals->gameMode == MODE_COMPETITION)
+    if (globals->gameMode == MODE_COMPETITION) {
+#if !defined(_arch_dreamcast)
+        EntityCompetitionSession *session = CompetitionSession_GetSession();
         session->totalRings[player->playerID] += amount;
+#endif
+    }
 
     player->rings = CLAMP(player->rings + amount, 0, 999);
 
@@ -2015,9 +2021,11 @@ void Player_HandleDeath(EntityPlayer *player)
 #endif
             globals->coolBonus[player->playerID] = 0;
 
+#if !defined(_arch_dreamcast)
             EntityCompetitionSession *session = CompetitionSession_GetSession();
             if (globals->gameMode == MODE_COMPETITION)
                 session->lives[player->playerID] = player->lives;
+#endif
 
 #if MANIA_USE_PLUS
             if (globals->gameMode != MODE_ENCORE) {
@@ -2031,9 +2039,11 @@ void Player_HandleDeath(EntityPlayer *player)
                         SaveRAM *saveRAM = SaveGame_GetSaveRAM();
                         if (globals->gameMode == MODE_COMPETITION) {
                             int32 playerID                    = RSDK.GetEntitySlot(player);
+#if !defined(_arch_dreamcast)
                             if (!session->finishState[playerID]) {
                                 CompSession_DeriveWinner(playerID, FINISHTYPE_GAMEOVER);
                             }
+#endif
 #if MANIA_USE_PLUS
                             foreach_all(HUD, hud) { hud->vsStates[RSDK.GetEntitySlot(player)] = HUD_State_MoveOut; }
 #endif
@@ -2112,10 +2122,12 @@ void Player_HandleDeath(EntityPlayer *player)
                     if (globals->gameMode == MODE_COMPETITION) {
                         showGameOver                      = false;
                         int32 playerID                    = RSDK.GetEntitySlot(player);
+#if !defined(_arch_dreamcast)
                         if (!session->finishState[playerID]) {
                             CompSession_DeriveWinner(playerID, FINISHTYPE_GAMEOVER);
                             showGameOver = !MANIA_USE_PLUS;
                         }
+#endif
 #if MANIA_USE_PLUS
                         foreach_all(HUD, hud) { hud->vsStates[RSDK.GetEntitySlot(player)] = HUD_State_MoveOut; }
 #endif
@@ -5445,7 +5457,7 @@ void Player_State_RayGlide(void)
             if (self->velocity.x < 0x10000)
                 self->velocity.x = 0x10000;
 
-            if (self->velocity.x > self->abilityValues[0]) 
+            if (self->velocity.x > self->abilityValues[0])
                 self->velocity.x = self->abilityValues[0];
         }
     }

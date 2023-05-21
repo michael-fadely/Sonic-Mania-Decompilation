@@ -138,7 +138,7 @@ $(GAME_OBJDIR)/%.o: $(GAME_PREBUILD) %.c
 $(GAME_PATH): $(GAME_PRELINK) $(GAME_OBJECTS)
 	@echo linking game...
 	$(CXX) $(CXXFLAGS_ALL) $(LDFLAGS_ALL) $(GAME_LDFLAGS) $(GAME_OBJECTS) $(GAME_LIBS) -o $@ 
- 	$(STRIP) $@
+	$(STRIP) $@
 	@echo done linking game
 
 all: $(GAME_POSTLINK) $(GAME_PATH)
