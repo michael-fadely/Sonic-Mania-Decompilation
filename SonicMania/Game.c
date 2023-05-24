@@ -56,7 +56,9 @@ void GlobalVariables_InitCB(GlobalVariables *globals)
     globals->presenceID = -1;
 
 #if MANIA_USE_PLUS
+#if !defined(_arch_dreamcast)
     globals->replayTableID = (uint16)-1;
+#endif
     globals->taTableID     = (uint16)-1;
 
     globals->stock          = (ID_RAY << 16) | (ID_KNUCKLES << 8) | ID_TAILS;
