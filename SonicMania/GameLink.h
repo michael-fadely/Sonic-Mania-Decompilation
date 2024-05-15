@@ -80,7 +80,7 @@ typedef uint32 color;
 #define RESERVE_ENTITY_COUNT (0x40)
 #define TEMPENTITY_COUNT     (0x100)
 #ifdef _arch_dreamcast
-#define SCENEENTITY_COUNT    (1024)
+#define SCENEENTITY_COUNT    (0x800)
 #else
 #define SCENEENTITY_COUNT    (0x800)
 #endif
