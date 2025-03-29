@@ -107,7 +107,6 @@ void UIWaitSpinner_FinishWait(void)
     }
     else {
         if (!spinner) {
-            printf("here! %s:%u\n", __FILE__, __LINE__);
             spinner              = CREATE_ENTITY(UIWaitSpinner, NULL, 0, 0);
             spinner->isPermanent = true;
 
