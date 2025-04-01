@@ -2543,10 +2543,12 @@ bool32 Player_CheckBadnikBreak(EntityPlayer *player, void *e, bool32 destroy)
             }
 
 #if MANIA_USE_PLUS
+#if !defined(_arch_dreamcast) // Avoids freezes when destroying badniks
             StatInfo info;
             TimeAttackData_TrackEnemyDefeat(&info, Zone_GetZoneID(), Zone->actID, characterID, SceneInfo->filter == (FILTER_BOTH | FILTER_ENCORE),
                                             FROM_FIXED(badnik->position.x), FROM_FIXED(badnik->position.y));
             API.TryTrackStat(&info);
+#endif
 #else
             APICallback_TrackEnemyDefeat(Zone_GetZoneID(), Zone->actID, characterID, FROM_FIXED(badnik->position.x), FROM_FIXED(badnik->position.y));
 #endif

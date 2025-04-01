@@ -80,8 +80,12 @@ bool32 ManiaModeMenu_InitAPI(void)
             if (MenuSetup->initializedAPI)
                 return true;
 
+#if defined(_arch_dreamcast) // TimeAttack is disabled, so it would hang because the last two bools are never set
+            if (globals->optionsLoaded == STATUS_OK && globals->saveLoaded == STATUS_OK) {
+#else
             if (globals->optionsLoaded == STATUS_OK && globals->saveLoaded == STATUS_OK && globals->replayTableLoaded == STATUS_OK
                 && globals->taTableLoaded == STATUS_OK) {
+#endif
 
                 if (!API_GetNoSave() && DialogRunner_NotifyAutosave())
                     return false;
