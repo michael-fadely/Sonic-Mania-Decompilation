@@ -417,8 +417,11 @@ typedef struct {
 } RSDKTouchInfo;
 
 typedef struct {
+    // DCFIXME: this should only be disabled when hardware rendering is enabled
+#if !defined(_arch_dreamcast)
     // uint16 *frameBuffer;
     uint16 frameBuffer[SCREEN_XMAX * SCREEN_YSIZE];
+#endif
     Vector2 position;
     Vector2 size;
     Vector2 center;
