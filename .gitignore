@@ -249,11 +249,3 @@ android/local.properties
 
 *.res
 dependencies/*
-
-cmake-build-*/
-disc/
-disc.cdi
-disc.iso
-make-disc.sh
-run-release-ip.sh
-run-release-ip-nocdfs.sh
