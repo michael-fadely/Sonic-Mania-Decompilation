@@ -22,8 +22,14 @@ void FBZSetup_StaticUpdate(void)
         if (Zone->actID == 1) // Cylinder H (left cylinder on the sheet)
             RSDK.DrawAniTiles(FBZSetup->aniTiles, 381, 0, 16 * FBZSetup->cylinderAniFrame, 256, 16);
 
+#if RETRO_PLATFORM == RETRO_KALLISTIOS
+        // Cylinder V (right cylinder on the sheet)
+        // 126 (last param) was changed to 128
+        RSDK.DrawAniTiles(FBZSetup->aniTiles, 401, 16 * (FBZSetup->cylinderAniFrame + 16), 0, 16, 128);
+#else
         // Cylinder V (right cylinder on the sheet)
         RSDK.DrawAniTiles(FBZSetup->aniTiles, 401, 16 * (FBZSetup->cylinderAniFrame + 16), 0, 16, 126);
+#endif
     }
 
     if (!(Zone->timer & 3)) {
