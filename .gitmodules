@@ -7,3 +7,4 @@
 [submodule "dependencies/RSDKv5"]
 	path = dependencies/RSDKv5
 	url = https://github.com/michael-fadely/RSDKv5-Decompilation
+	branch = "sf94/dreamcast-kallistios-pvr"
