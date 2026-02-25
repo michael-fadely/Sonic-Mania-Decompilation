@@ -7,6 +7,11 @@
 
 #include "Game.h"
 
+#if _arch_dreamcast
+#define recip256 0.00390625f
+#define recip64k 0.00001526f
+#endif
+
 ObjectUFO_Decoration *UFO_Decoration;
 
 void UFO_Decoration_Update(void)
@@ -36,6 +41,15 @@ void UFO_Decoration_LateUpdate(void)
 
     Matrix *m = &UFO_Camera->matWorld;
 
+#if _arch_dreamcast
+    self->zdepth = (int32)(shz_dot8f(m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3], x, y, z, 65536.0f) * recip64k);
+
+    if (self->zdepth >= 0x4000) {
+        float rzd = shz_invf(self->zdepth) * recip256;
+        int32 depth = (int32)(shz_dot8f(m->values[0][0], m->values[0][1], m->values[0][2], m->values[0][3], x, y, z, 65536.0f) * rzd);
+        self->visible = abs(depth) < 0x100;
+    }
+#else
     self->zdepth = m->values[2][1] * (y >> 16) + m->values[2][2] * (z >> 16) + m->values[2][0] * (x >> 16) + m->values[2][3];
 
     if (self->zdepth >= 0x4000) {
@@ -44,6 +58,7 @@ void UFO_Decoration_LateUpdate(void)
                       / self->zdepth;
         self->visible = abs(depth) < 0x100;
     }
+#endif
 }
 
 void UFO_Decoration_StaticUpdate(void) {}
@@ -52,6 +67,29 @@ void UFO_Decoration_Draw(void)
 {
     RSDK_THIS(UFO_Decoration);
 
+#if _arch_dreamcast
+    if (self->visible && self->zdepth >= 0x4000 && self->zdepth < 0x2000000*3/4) {
+        RSDK.Prepare3DScene(UFO_Decoration->sceneIndex);
+
+        MatrixScaleXYZ(&self->matTransform, self->scale.x, self->size, self->scale.x);
+        MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, 0);
+
+        MatrixRotateY(&self->matNormal, self->angle);
+        MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
+        MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+
+        if (self->type <= UFO_DECOR_PILLAR2) {
+            RSDK.AddModelTo3DScene(UFO_Decoration->modelIndices[self->type], UFO_Decoration->sceneIndex, UFO_Decoration->drawType, &self->matWorld,
+                                   &self->matNormal, 0xFFFFFF);
+        }
+        else {
+            RSDK.AddMeshFrameTo3DScene(UFO_Decoration->modelIndices[self->type], UFO_Decoration->sceneIndex, &self->animator,
+                                       UFO_Decoration->drawType, &self->matWorld, &self->matNormal, 0xFFFFFF);
+        }
+
+        RSDK.Draw3DScene(UFO_Decoration->sceneIndex);
+    }
+#else
     if (self->zdepth >= 0x4000) {
         RSDK.Prepare3DScene(UFO_Decoration->sceneIndex);
 
@@ -76,6 +114,7 @@ void UFO_Decoration_Draw(void)
 
         RSDK.Draw3DScene(UFO_Decoration->sceneIndex);
     }
+#endif
 }
 
 void UFO_Decoration_Create(void *data)
@@ -89,8 +128,13 @@ void UFO_Decoration_Create(void *data)
         self->visible       = true;
         self->drawGroup     = 4;
         self->active        = ACTIVE_BOUNDS;
+#if _arch_dreamcast
+        self->updateRange.x = 0x4000000*3/4;
+        self->updateRange.y = 0x4000000*3/4;
+#else
         self->updateRange.x = 0x4000000;
         self->updateRange.y = 0x4000000;
+#endif
 
         if (self->type == UFO_DECOR_BIRD)
             self->height = 0x600000;

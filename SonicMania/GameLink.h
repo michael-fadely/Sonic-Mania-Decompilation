@@ -129,6 +129,15 @@ typedef struct {
     int32 y;
 } Vector2;
 
+#if _arch_dreamcast
+typedef struct {
+    float x;
+    float y;
+    float z;
+    float w;
+} Vector3f;
+#endif
+
 typedef struct {
 #if RETRO_REV0U
     // used for languages such as beeflang that always have vfTables in classes
@@ -265,7 +274,7 @@ typedef struct {
 
 typedef struct {
     RSDK_ENTITY
-#if RETRO_PLATFORM == RETRO_KALLISTIOS
+#if _arch_dreamcast
     void *data[0xF2];
 #else
     void *data[0x100];
@@ -1580,6 +1589,9 @@ typedef struct {
                               bool32 screenRelative);
     void (*DrawFace)(Vector2 *vertices, int32 vertCount, int32 r, int32 g, int32 b, int32 alpha, int32 inkEffect);
     void (*DrawBlendedFace)(Vector2 *vertices, color *vertColors, int32 vertCount, int32 alpha, int32 inkEffect);
+#if _arch_dreamcast
+    void (*Draw3DSprite)(Animator *animator, Vector3f *position, bool32 screenRelative);
+#endif
     void (*DrawSprite)(Animator *animator, Vector2 *position, bool32 screenRelative);
     void (*DrawDeformedSprite)(uint16 sheetID, int32 inkEffect, bool32 screenRelative);
     void (*DrawText)(Animator *animator, Vector2 *position, String *string, int32 endFrame, int32 textLength, int32 align, int32 spacing, void *unused,

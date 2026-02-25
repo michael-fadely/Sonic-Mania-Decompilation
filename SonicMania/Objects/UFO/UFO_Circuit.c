@@ -7,6 +7,11 @@
 
 #include "Game.h"
 
+#if _arch_dreamcast
+#define recip256 0.00390625f
+#define recip64k 0.00001526f
+#endif
+
 ObjectUFO_Circuit *UFO_Circuit;
 
 void UFO_Circuit_Update(void)
@@ -28,6 +33,7 @@ void UFO_Circuit_LateUpdate(void)
 
     Matrix *m = &UFO_Camera->matWorld;
 
+#if !_arch_dreamcast
     self->zdepth = m->values[2][1] * (y >> 16) + m->values[2][2] * (z >> 16) + m->values[2][0] * (x >> 16) + m->values[2][3];
 
     if (self->zdepth >= 0x400) {
@@ -37,6 +43,16 @@ void UFO_Circuit_LateUpdate(void)
 
         self->visible = abs(depth) < 0x100;
     }
+#else
+    self->zdepth = shz_dot8f(m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3], x, y, z, 65536.0f) * recip64k;
+
+    if (self->zdepth >= 0x400) {
+        float rzd = shz_invf(self->zdepth) * recip256;
+        int32 depth = (int32)(shz_dot8f(m->values[0][0], m->values[0][1], m->values[0][2], m->values[0][3], x, y, z, 65536.0f) * rzd);
+
+        self->visible = abs(depth) < 0x100;
+    }
+#endif
 }
 
 void UFO_Circuit_StaticUpdate(void) {}
@@ -45,6 +61,7 @@ void UFO_Circuit_Draw(void)
 {
     RSDK_THIS(UFO_Circuit);
 
+#if !_arch_dreamcast
     if (self->zdepth >= 0x4000) {
         RSDK.Prepare3DScene(UFO_Circuit->sceneIndex);
 
@@ -63,6 +80,25 @@ void UFO_Circuit_Draw(void)
 
         RSDK.Draw3DScene(UFO_Circuit->sceneIndex);
     }
+#else
+    if (self->visible &&  self->zdepth >= 0x4000 && self->zdepth <= 0x140000) {
+        RSDK.Prepare3DScene(UFO_Circuit->sceneIndex);
+
+        MatrixScaleXYZ(&self->matTransform, 0x200, 0x200, 0x200);
+        MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, false);
+        MatrixRotateY(&self->matNormal, self->angleY);
+
+        MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
+        MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+
+        RSDK.AddMeshFrameTo3DScene(self->ufoAnimator.animationID, UFO_Circuit->sceneIndex, &self->ufoAnimator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                                   &self->matWorld, &self->matNormal, 0xFFFFFF);
+        RSDK.AddMeshFrameTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, &self->ufoAnimator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                                   &self->matWorld, &self->matNormal, 0xFFFFFF);
+
+        RSDK.Draw3DScene(UFO_Circuit->sceneIndex);
+    }
+#endif
 }
 
 void UFO_Circuit_Create(void *data)
@@ -202,6 +238,7 @@ void UFO_Circuit_HandleNodeSpeeds(void)
             break;
     }
 }
+
 bool32 UFO_Circuit_CheckNodeChange(void)
 {
     RSDK_THIS(UFO_Circuit);
@@ -254,6 +291,7 @@ bool32 UFO_Circuit_CheckNodeChange(void)
 
     return false;
 }
+
 void UFO_Circuit_State_UFO(void)
 {
     RSDK_THIS(UFO_Circuit);
@@ -274,8 +312,13 @@ void UFO_Circuit_State_UFO(void)
     }
 
     self->topSpeed = UFO_Player->maxSpeed - (UFO_Player->maxSpeed - 0x70000) / 3;
+#if _arch_dreamcast
+    self->velocity.x += (((-self->groundVel >> 8) * Cos256(self->angle)) - self->velocity.x) >> 3;
+    self->velocity.y += (((-self->groundVel >> 8) * Sin256(self->angle)) - self->velocity.y) >> 3;
+#else
     self->velocity.x += (((-self->groundVel >> 8) * RSDK.Cos256(self->angle)) - self->velocity.x) >> 3;
     self->velocity.y += (((-self->groundVel >> 8) * RSDK.Sin256(self->angle)) - self->velocity.y) >> 3;
+#endif
 
     self->position.x += self->velocity.x;
     self->position.y += self->velocity.y;
@@ -300,7 +343,11 @@ void UFO_Circuit_State_UFO(void)
                 ry = (self->height - player->height - 0xA0000) >> 16;
                 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+                int32 dist = (int32)shz_mag_sqr3f(rx, ry, rz);
+#else
                 int32 dist = rx * rx + ry * ry + rz * rz;
+#endif
                 if (!UFO_Setup->machLevel && dist < 0xC000)
                     self->topSpeed += (abs(player->velocity.y) + abs(player->velocity.x)) >> 1;
 

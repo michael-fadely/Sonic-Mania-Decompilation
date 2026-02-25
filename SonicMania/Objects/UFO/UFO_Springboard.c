@@ -80,6 +80,14 @@ void UFO_Springboard_Draw(void)
     if (self->zdepth >= 0x4000) {
         RSDK.Prepare3DScene(UFO_Springboard->sceneIndex);
 
+#if _arch_dreamcast
+        MatrixScaleXYZ(&self->matTemp, 0x100, self->scale.x, 0x100);
+        MatrixTranslateXYZ(&self->matTemp, self->position.x, self->height, self->position.y, 0);
+
+        MatrixRotateY(&self->matNormal, self->angle);
+        MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTemp);
+        MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+#else
         RSDK.MatrixScaleXYZ(&self->matTemp, 0x100, self->scale.x, 0x100);
         RSDK.MatrixTranslateXYZ(&self->matTemp, self->position.x, self->height, self->position.y, 0);
 
@@ -87,6 +95,7 @@ void UFO_Springboard_Draw(void)
         RSDK.MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTemp);
         RSDK.MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
         RSDK.MatrixMultiply(&self->matNormal, &self->matNormal, &UFO_Camera->matView);
+#endif
 
         RSDK.AddMeshFrameTo3DScene(UFO_Springboard->modelIndex, UFO_Springboard->sceneIndex, &self->animator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
                                    &self->matWorld, &self->matNormal, 0xFFFFFF);

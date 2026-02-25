@@ -25,9 +25,15 @@ void UFO_Ring_LateUpdate(void)
 
     Matrix *m = &UFO_Camera->matWorld;
 
+#if _arch_dreamcast
+    self->worldX = (int32)shz_dot8f(x, y, z, 256.0f, m->values[0][0], m->values[0][1], m->values[0][2], m->values[0][3]);
+    self->worldY = (int32)shz_dot8f(x, y, z, 256.0f, m->values[1][0], m->values[1][1], m->values[1][2], m->values[1][3]);
+    self->zdepth = (int32)shz_dot8f(x, y, z, 256.0f, m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3]) >> 8;
+#else
     self->worldX = m->values[0][3] + (y * m->values[0][1] >> 8) + (z * m->values[0][2] >> 8) + (x * m->values[0][0] >> 8);
     self->worldY = m->values[1][3] + (y * m->values[1][1] >> 8) + (z * m->values[1][2] >> 8) + (x * m->values[1][0] >> 8);
     self->zdepth = m->values[2][3] + (y * m->values[2][1] >> 8) + (z * m->values[2][2] >> 8) + (x * m->values[2][0] >> 8);
+#endif
 }
 
 void UFO_Ring_StaticUpdate(void) {}
@@ -35,7 +41,24 @@ void UFO_Ring_StaticUpdate(void) {}
 void UFO_Ring_Draw(void)
 {
     RSDK_THIS(UFO_Ring);
+#if _arch_dreamcast
+    if (self->zdepth >= 0x100 && self->zdepth < 0x50000000) {
+        self->direction = self->animator.frameID > 8;
+        float rzd = shz_invf(self->zdepth);
 
+        Vector3f drawPos;
+        drawPos.x = (float)((ScreenInfo->center.x + (int)(self->worldX * rzd)) << 16);
+        drawPos.y = (float)((ScreenInfo->center.y - (int)(self->worldY * rzd)) << 16);
+        drawPos.z = shz_divf(65536.0f, (float)self->zdepth);
+        uint32 newscale = 0x1000000 * rzd;
+        self->scale.x = newscale;
+        self->scale.y = newscale;
+        if (self->state == UFO_Ring_State_NormalRing)
+            self->animator.frameID = UFO_Setup->ringFrame;
+
+        RSDK.Draw3DSprite(&self->animator, &drawPos, true);
+    }
+#else
     if (self->zdepth >= 0x100) {
         self->direction = self->animator.frameID > 8;
 
@@ -50,6 +73,7 @@ void UFO_Ring_Draw(void)
 
         RSDK.DrawSprite(&self->animator, &drawPos, true);
     }
+#endif
 }
 
 void UFO_Ring_Create(void *data)
@@ -130,7 +154,11 @@ void UFO_Ring_State_NormalRing(void)
         int32 ry = (self->height - player->height - 0xA0000) >> 16;
         int32 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+        if ((int32)(shz_mag_sqr3f(rx,ry,rz)) < UFO_Player->maxSpeed >> 9) {
+#else
         if (rx * rx + ry * ry + rz * rz < UFO_Player->maxSpeed >> 9) {
+#endif
             RSDK.SetSpriteAnimation(UFO_Ring->aniFrames, 2, &self->animator, true, 4);
             ++self->drawGroup;
             self->state = UFO_Ring_State_Sparkle;

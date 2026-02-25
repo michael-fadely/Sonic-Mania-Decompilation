@@ -7,6 +7,10 @@
 
 #include "Game.h"
 
+#if _arch_dreamcast
+#define recip256 0.00390625f
+#endif
+
 ObjectUFO_Shadow *UFO_Shadow;
 
 void UFO_Shadow_Update(void) {}
@@ -29,6 +33,15 @@ void UFO_Shadow_LateUpdate(void)
             int32 z       = self->position.y >> 8;
             Matrix *mat   = &UFO_Camera->matWorld;
 
+#if _arch_dreamcast
+            self->zdepth = shz_dot6f(x, z, 256.0f, mat->values[2][0], mat->values[2][2], mat->values[2][3]) * recip256;
+
+            if (self->zdepth >= 0x4000) {
+                float rzd = shz_invf((float)self->zdepth);
+                self->visible = abs((int32)(shz_dot6f(x, z, 256.0f, mat->values[0][0], mat->values[0][2], mat->values[0][3])) * rzd)
+                    < 0x100;
+            }
+#else
             self->zdepth = mat->values[2][3] + (z * mat->values[2][2] >> 8) + (x * mat->values[2][0] >> 8);
 
             if (self->zdepth >= 0x4000) {
@@ -37,6 +50,7 @@ void UFO_Shadow_LateUpdate(void)
                         / self->zdepth)
                     < 0x100;
             }
+#endif
         }
     }
     else {
@@ -50,6 +64,19 @@ void UFO_Shadow_Draw(void)
 {
     RSDK_THIS(UFO_Shadow);
 
+#if _arch_dreamcast
+    if (self->visible) {
+        if (self->zdepth >= 0x4000 && self->zdepth < 0x20000) {
+            MatrixScaleXYZ(&self->matrix, self->shadowScale, 0x100, self->shadowScale);
+            MatrixTranslateXYZ(&self->matrix, self->position.x, 0, self->position.y, 0);
+            MatrixMultiply(&self->matrix, &self->matrix, &UFO_Camera->matWorld);
+
+            RSDK.Prepare3DScene(UFO_Shadow->sceneID);
+            RSDK.AddModelTo3DScene(UFO_Shadow->modelIndex, UFO_Shadow->sceneID, S3D_SOLIDCOLOR_SCREEN, &self->matrix, 0, 0);
+            RSDK.Draw3DScene(UFO_Shadow->sceneID);
+        }
+    }
+#else
     if (self->zdepth >= 0x4000) {
         RSDK.MatrixScaleXYZ(&self->matrix, self->shadowScale, 0x100, self->shadowScale);
         RSDK.MatrixTranslateXYZ(&self->matrix, self->position.x, 0, self->position.y, 0);
@@ -59,6 +86,7 @@ void UFO_Shadow_Draw(void)
         RSDK.AddModelTo3DScene(UFO_Shadow->modelIndex, UFO_Shadow->sceneID, S3D_SOLIDCOLOR_SCREEN, &self->matrix, 0, 0);
         RSDK.Draw3DScene(UFO_Shadow->sceneID);
     }
+#endif
 }
 
 void UFO_Shadow_Create(void *data)
