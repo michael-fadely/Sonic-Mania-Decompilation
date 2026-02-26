@@ -62,7 +62,7 @@ void UFO_Sphere_Draw(void)
     Vector4f pos;
     pos.x = (float)self->drawPos.x;
     pos.y = (float)self->drawPos.y;
-    pos.z = shz_divf(65536.0f*0.5f, (float)self->zdepth);
+    pos.z = shz_divf(65536.0f, (float)self->zdepth);
 
     RSDK.Draw3DSprite(&self->animator, &pos, true);
 #else
