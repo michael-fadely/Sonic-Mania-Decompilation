@@ -123,17 +123,6 @@ __always_inline float shz_mag_sqr3f(float x, float y, float z) {
     return rw;
 }
 
-__always_inline float shz_mag_sqr4f(float x, float y, float z, float w) {
-    register float rx asm("fr8") = x;
-    register float ry asm("fr9") = y;
-    register float rz asm("fr10") = z;
-    register float rw asm("fr11") = w;
-
-    asm("fipr fv8, fv8" : "+f"(rw) : "f"(rx), "f"(ry), "f"(rz));
-
-    return rw;
-}
-
 __always_inline void shz_xmtrx_load_apply_store_4x4(shz_matrix_4x4_t* out, const shz_matrix_4x4_t* matrix1,
                                                const shz_matrix_4x4_t* matrix2) {
     unsigned int prefetch_scratch;
@@ -191,11 +180,11 @@ __always_inline void shz_xmtrx_load_apply_store_4x4(shz_matrix_4x4_t* out, const
 
         fschg
     )"
-                 : [m1] "+&r"(matrix1), [m2] "+r"(matrix2), [out] "+&r"(out),
-                   "=m"(*out), [prefscr] "=&r"(prefetch_scratch)
-                 : "m"(*matrix1), "m"(*matrix2)
-                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
-                   "fr14", "fr15");
+    : [m1] "+&r"(matrix1), [m2] "+r"(matrix2), [out] "+&r"(out),
+    "=m"(*out), [prefscr] "=&r"(prefetch_scratch)
+    : "m"(*matrix1), "m"(*matrix2)
+    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+    "fr14", "fr15");
 }
 
 __always_inline float fast_isin(int angle) {
@@ -209,6 +198,7 @@ __always_inline float fast_icos(int angle) {
 __always_inline float fast_itan(int angle) {
     return __builtin_tanf((float)(angle) / 10430.37835f);
 }
+
 __always_inline int32 Sin1024(int32 angle) { return (int32)(fast_isin((angle & 0x3FF) << 6) * 1024); }
 __always_inline int32 Cos1024(int32 angle) { return (int32)(fast_icos((angle & 0x3FF) << 6) * 1024); }
 __always_inline int32 Tan1024(int32 angle) { return (int32)(fast_itan((angle & 0x3FF) << 6) * 1024); }
@@ -237,203 +227,6 @@ __always_inline int32 Tan256(int32 angle) { return (int32)(fast_itan((angle & 0x
     return rw2;
 }
 
-__always_inline void SetIdentityMatrix(Matrix *matrix)
-{
-    matrix->values[0][0] = 0x100;
-    matrix->values[1][0] = 0;
-    matrix->values[2][0] = 0;
-    matrix->values[3][0] = 0;
-    matrix->values[0][1] = 0;
-    matrix->values[1][1] = 0x100;
-    matrix->values[2][1] = 0;
-    matrix->values[3][1] = 0;
-    matrix->values[0][2] = 0;
-    matrix->values[1][2] = 0;
-    matrix->values[2][2] = 0x100;
-    matrix->values[3][2] = 0;
-    matrix->values[0][3] = 0;
-    matrix->values[1][3] = 0;
-    matrix->values[2][3] = 0;
-    matrix->values[3][3] = 0x100;
-}
-
-__always_inline void LoadXmtrx(Matrix *src) {
-    float  __attribute__((aligned(32))) xmtrx[4][4];
-    for (int i=0;i<16;i++) {
-        uint32 rowA              = i >> 2;
-        uint32 rowB              = i  & 3;
-        xmtrx[rowA][rowB] = (float)src->values[rowB][rowA];
-    }
-    mat_load(&xmtrx);
-}
-
-__always_inline void ApplyToXmtrx(Matrix *src) {
-    float __attribute__((aligned(32)))  xmtrx[4][4];
-    for (int i=0;i<16;i++) {
-        uint32 rowA              = i >> 2;
-        uint32 rowB              = i  & 3;
-        xmtrx[rowA][rowB] = (float)src->values[rowB][rowA] * recip256;
-    }
-    mat_apply(&xmtrx);
-}
-
-__always_inline void StoreXmtrx(Matrix *dst) {
-    float __attribute__((aligned(32))) xmtrx[4][4];
-    mat_store(&xmtrx);
-    for (int i=0;i<16;i++) {
-        uint32 rowA              = i >> 2;
-        uint32 rowB              = i  & 3;
-        dst->values[rowA][rowB] = (int)xmtrx[rowB][rowA];
-    }
-}
-
-__always_inline void shz_xmtrx_load_int_4x4(const int32 matrix[16]) {
-    __builtin_prefetch((void*)(((uintptr_t)matrix) + 32));
-
-    asm volatile(R"(
-        frchg
-
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr0
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr1
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr2
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr3
-
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr4
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr5
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr6
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr7
-
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr8
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr9
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr10
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr11
-
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr12
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr13
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr14
-        lds.l   @%[mtx]+, fpul
-        float   fpul, fr15
-
-        frchg
-
-    )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix)
-    : "fpul");
-}
-
-inline void shz_xmtrx_store_int_4x4(int32 matrix[16]) {
-    __builtin_prefetch((void*)(((uintptr_t)matrix) + 32));
-
-    asm volatile(R"(
-        frchg
-        add     #64, %[mtx]
-
-        ftrc    fr15, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr14, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr13, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr12, fpul
-        sts.l   fpul, @-%[mtx]
-
-        ftrc    fr11, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr10, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr9, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr8, fpul
-        sts.l   fpul, @-%[mtx]
-
-        ftrc    fr7, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr6, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr5, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr4, fpul
-        sts.l   fpul, @-%[mtx]
-
-        ftrc    fr3, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr2, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr1, fpul
-        sts.l   fpul, @-%[mtx]
-        ftrc    fr0, fpul
-        sts.l   fpul, @-%[mtx]
-
-        frchg
-    )"
-    : "=m" (*matrix)
-    : [mtx] "r" (matrix)
-    : "fpul");
-}
-
-__always_inline void shz_xmtrx_apply_4x4(const shz_matrix_4x4_t* matrix) {
-    asm volatile(R"(
-        mov     r15, r0
-        pref    @%[mtx]
-        or      #0x0f, r0
-        xor     #0x0f, r0
-        mov     r15, r7
-        fschg
-        mov     r0, r15
-
-        fmov.d  dr14, @-r15
-        fmov.d  dr12, @-r15
-
-        fmov.d  @%[mtx], dr0
-        add     #32, %[mtx]
-        pref    @%[mtx]
-        add     #-(32-8), %[mtx]
-        fmov.d  @%[mtx]+, dr2
-        fmov.d  @%[mtx]+, dr4
-        fmov.d  @%[mtx]+, dr6
-
-        ftrv    xmtrx, fv0
-
-        fmov.d  @%[mtx]+, dr8
-        fmov.d  @%[mtx]+, dr10
-
-        ftrv    xmtrx, fv4
-
-        fmov.d  @%[mtx]+, dr12
-        fmov.d  @%[mtx], dr14
-
-        ftrv    xmtrx, fv8
-        ftrv    xmtrx, fv12
-
-        frchg
-        fmov.d  @r15+, dr12
-        fmov.d  @r15, dr14
-
-        mov     r7, r15
-        fschg
-    )"
-                 : [mtx] "+r"(matrix)
-                 : "m"(*matrix)
-                 : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11",
-                   "fr12");
-}
-
 void MatrixMultiply(Matrix *dest, Matrix *matrixA, Matrix *matrixB)
 {
     float __attribute__((aligned(32))) xmtrxB[16];
@@ -454,18 +247,6 @@ void MatrixMultiply(Matrix *dest, Matrix *matrixA, Matrix *matrixB)
     for (int i=0;i<16;i++) {
         *mtrxC++ = ((int32)xmtrxC[i]) >> 8;
     }
-}
-
-void MatrixMultiply_NoStore(Matrix *dest, Matrix *matrixA, Matrix *matrixB)
-{
-    LoadXmtrx(matrixA);
-    ApplyToXmtrx(matrixB);
-}
-
-void MatrixMultiply_NoReload(Matrix *dest, Matrix *matrixA, Matrix *matrixB)
-{
-    ApplyToXmtrx(matrixB);
-    StoreXmtrx(dest);
 }
 
 void MatrixTranslateXYZ(Matrix *matrix, int32 x, int32 y, int32 z, bool32 setIdentity)
