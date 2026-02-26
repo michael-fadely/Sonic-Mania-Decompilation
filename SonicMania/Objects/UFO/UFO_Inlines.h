@@ -3,8 +3,6 @@
 #define __UFO_INLINES_H
 #include <kos.h>
 
-#define recip256 0.00390625f
-
 /*! 2D Vector type
  *
  *  Structure for holding coordinates of a 2-dimensional vector.

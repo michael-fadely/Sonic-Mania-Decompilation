@@ -46,7 +46,7 @@ void UFO_Ring_Draw(void)
         self->direction = self->animator.frameID > 8;
         float rzd = shz_invf(self->zdepth);
 
-        Vector3f drawPos;
+        Vector4f drawPos;
         drawPos.x = (float)((ScreenInfo->center.x + (int)(self->worldX * rzd)) << 16);
         drawPos.y = (float)((ScreenInfo->center.y - (int)(self->worldY * rzd)) << 16);
         drawPos.z = shz_divf(65536.0f, (float)self->zdepth);

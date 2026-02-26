@@ -7,10 +7,6 @@
 
 #include "Game.h"
 
-#if _arch_dreamcast
-#define recip256 0.00390625f
-#endif
-
 ObjectUFO_ItemBox *UFO_ItemBox;
 
 void UFO_ItemBox_Update(void)
@@ -33,9 +29,9 @@ void UFO_ItemBox_LateUpdate(void)
         Matrix *mat = &UFO_Camera->matWorld;
 
 #if _arch_dreamcast
-        self->worldX = shz_dot8f(x, y, z, 256.0f, mat->values[0][0], mat->values[0][1], mat->values[0][2], mat->values[0][3]) * recip256;
-        self->worldY = shz_dot8f(x, y, z, 256.0f, mat->values[1][0], mat->values[1][1], mat->values[1][2], mat->values[1][3]) * recip256;
-        self->zdepth = shz_dot8f(x, y, z, 256.0f, mat->values[2][0], mat->values[2][1], mat->values[2][2], mat->values[2][3]) * recip256;
+        self->worldX = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[0][0], mat->values[0][1], mat->values[0][2], mat->values[0][3])) >> 8;
+        self->worldY = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[1][0], mat->values[1][1], mat->values[1][2], mat->values[1][3])) >> 8;
+        self->zdepth = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[2][0], mat->values[2][1], mat->values[2][2], mat->values[2][3])) >> 8;
 #else
         self->worldX = mat->values[0][3] + (y * mat->values[0][1] >> 8) + (z * mat->values[0][2] >> 8) + (x * mat->values[0][0] >> 8);
         self->worldY = mat->values[1][3] + (y * mat->values[1][1] >> 8) + (z * mat->values[1][2] >> 8) + (x * mat->values[1][0] >> 8);
@@ -96,7 +92,7 @@ void UFO_ItemBox_Draw(void)
     }
 
 #if _arch_dreamcast
-    Vector3f pos;
+    Vector4f pos;
     pos.x = (float)self->drawPos.x;
     pos.y = (float)self->drawPos.y;
     pos.z = shz_divf(65536.0f*0.5f, (float)self->zdepth);

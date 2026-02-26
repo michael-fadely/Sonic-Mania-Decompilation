@@ -7,10 +7,6 @@
 
 #include "Game.h"
 
-#if _arch_dreamcast
-#define recip256 0.00390625f
-#endif
-
 ObjectUFO_Sphere *UFO_Sphere;
 
 void UFO_Sphere_Update(void)
@@ -63,7 +59,7 @@ void UFO_Sphere_Draw(void)
 
     }
 
-    Vector3f pos;
+    Vector4f pos;
     pos.x = (float)self->drawPos.x;
     pos.y = (float)self->drawPos.y;
     pos.z = shz_divf(65536.0f*0.5f, (float)self->zdepth);
@@ -265,9 +261,9 @@ void UFO_Sphere_State_Moving(void)
     self->height     = 0;
 
 
-    self->position.x = shz_dot6f(self->position.x, self->position.y, 256, m->values[0][0], m->values[0][2], m->values[0][3]) * recip256;
-    self->height = shz_dot6f(self->position.x, self->position.y, 256, m->values[1][0], m->values[1][2], m->values[1][3]) * recip256;
-    self->position.y = shz_dot8f(self->position.x, self->height, self->position.y, 256.0f, m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3]) * recip256;
+    self->position.x = ((int32)shz_dot6f(self->position.x, self->position.y, 256, m->values[0][0], m->values[0][2], m->values[0][3])) >> 8;
+    self->height     = ((int32)shz_dot6f(self->position.x, self->position.y, 256, m->values[1][0], m->values[1][2], m->values[1][3])) >> 8;
+    self->position.y = ((int32)shz_dot8f(self->position.x, self->height, self->position.y, 256.0f, m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3])) >> 8;
 #else
     self->position.x = self->amplitude.x * RSDK.Cos256(self->angle + (UFO_Setup->timer << self->speed));
     self->position.y = self->amplitude.y * RSDK.Sin256(self->angle + (UFO_Setup->timer << self->speed));

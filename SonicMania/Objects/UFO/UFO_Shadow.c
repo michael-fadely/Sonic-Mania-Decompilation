@@ -7,10 +7,6 @@
 
 #include "Game.h"
 
-#if _arch_dreamcast
-#define recip256 0.00390625f
-#endif
-
 ObjectUFO_Shadow *UFO_Shadow;
 
 void UFO_Shadow_Update(void) {}
@@ -34,7 +30,7 @@ void UFO_Shadow_LateUpdate(void)
             Matrix *mat   = &UFO_Camera->matWorld;
 
 #if _arch_dreamcast
-            self->zdepth = shz_dot6f(x, z, 256.0f, mat->values[2][0], mat->values[2][2], mat->values[2][3]) * recip256;
+            self->zdepth = ((int32)shz_dot6f(x, z, 256.0f, mat->values[2][0], mat->values[2][2], mat->values[2][3])) >> 8;
 
             if (self->zdepth >= 0x4000) {
                 float rzd = shz_invf((float)self->zdepth);

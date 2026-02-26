@@ -135,7 +135,7 @@ typedef struct {
     float y;
     float z;
     float w;
-} Vector3f;
+} Vector4f;
 #endif
 
 typedef struct {
@@ -1590,7 +1590,7 @@ typedef struct {
     void (*DrawFace)(Vector2 *vertices, int32 vertCount, int32 r, int32 g, int32 b, int32 alpha, int32 inkEffect);
     void (*DrawBlendedFace)(Vector2 *vertices, color *vertColors, int32 vertCount, int32 alpha, int32 inkEffect);
 #if _arch_dreamcast
-    void (*Draw3DSprite)(Animator *animator, Vector3f *position, bool32 screenRelative);
+    void (*Draw3DSprite)(Animator *animator, Vector4f *position, bool32 screenRelative);
 #endif
     void (*DrawSprite)(Animator *animator, Vector2 *position, bool32 screenRelative);
     void (*DrawDeformedSprite)(uint16 sheetID, int32 inkEffect, bool32 screenRelative);
