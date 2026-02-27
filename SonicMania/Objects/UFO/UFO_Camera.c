@@ -7,6 +7,10 @@
 
 #include "Game.h"
 
+#if _arch_dreamcast
+#include "UFO_Inlines.h"
+#endif
+
 ObjectUFO_Camera *UFO_Camera;
 
 void UFO_Camera_Update(void) {}
@@ -51,7 +55,11 @@ void UFO_Camera_HandleCamPos(void)
 {
     RSDK_THIS(UFO_Camera);
 
+#if _arch_dreamcast
+    int32 cos = MAX(Cos1024(-self->angleX) << 12, 0x3C0000);
+#else
     int32 cos = MAX(RSDK.Cos1024(-self->angleX) << 12, 0x3C0000);
+#endif
 
     int32 angle  = self->angle - self->prevAngle;
     int32 angle2 = angle - 0x400;
@@ -63,7 +71,11 @@ void UFO_Camera_HandleCamPos(void)
     else
         ScreenInfo->position.x -= 2 * angle;
 
+#if _arch_dreamcast
+    int32 offset           = ((Sin1024(-self->angleX) << 12) << 8) / cos;
+#else
     int32 offset           = ((RSDK.Sin1024(-self->angleX) << 12) << 8) / cos;
+#endif
     ScreenInfo->position.y = offset - ScreenInfo->center.y + 512;
     self->prevAngle        = self->angle;
 
@@ -96,21 +108,51 @@ void UFO_Camera_State_Normal(void)
         self->angle &= 0x3FF;
         if (target->state == UFO_Player_State_Springboard) {
             self->angleX = -(target->height >> 18);
+#if _arch_dreamcast
+            int32 rad    = self->radius * Cos1024(self->angleX) >> 10;
+
+            self->position.x = target->position.x - rad * Sin1024(self->angle);
+            self->position.y = target->position.y - rad * Cos1024(self->angle);
+
+            self->height = (target->height >> 1) - (Sin1024(self->angleX) << 14) + 0x400000;
+#else
             int32 rad    = self->radius * RSDK.Cos1024(self->angleX) >> 10;
 
             self->position.x = target->position.x - rad * RSDK.Sin1024(self->angle);
             self->position.y = target->position.y - rad * RSDK.Cos1024(self->angle);
 
             self->height = (target->height >> 1) - (RSDK.Sin1024(self->angleX) << 14) + 0x400000;
+#endif
         }
         else {
             self->angleX     = 0;
+#if _arch_dreamcast
+            self->position.x = target->position.x - self->radius * Sin1024(self->angle);
+            self->position.y = target->position.y - self->radius * Cos1024(self->angle);
+#else
             self->position.x = target->position.x - self->radius * RSDK.Sin1024(self->angle);
             self->position.y = target->position.y - self->radius * RSDK.Cos1024(self->angle);
+#endif
             self->height     = (target->height >> 2) + 0x400000;
         }
     }
 
+#if _arch_dreamcast
+    MatrixTranslateXYZ(&self->matWorld, -self->position.x, -self->height, -self->position.y, true);
+    MatrixRotateXYZ(&UFO_Camera->matView, self->angleX, self->angle, 0);
+
+    MatrixMultiply(&UFO_Camera->matWorld, &self->matWorld, &UFO_Camera->matView);
+    MatrixScaleXYZ(&self->matWorld, -0x100, 0x100, 0x100);
+
+    MatrixMultiply(&UFO_Camera->matView, &UFO_Camera->matView, &self->matWorld);
+
+    if (UFO_Camera->isSS7) {
+        MatrixRotateXYZ(&UFO_Camera->matTemp, self->angleX + 4 * UFO_Setup->timer, self->angle, 0);
+        MatrixMultiply(&UFO_Camera->matTemp, &UFO_Camera->matTemp, &self->matWorld);
+    }
+
+    MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#else
     RSDK.MatrixTranslateXYZ(&self->matWorld, -self->position.x, -self->height, -self->position.y, true);
     RSDK.MatrixRotateXYZ(&UFO_Camera->matView, self->angleX, self->angle, 0);
 
@@ -125,6 +167,7 @@ void UFO_Camera_State_Normal(void)
     }
 
     RSDK.MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#endif
 }
 
 void UFO_Camera_State_CourseOut(void)
@@ -138,6 +181,16 @@ void UFO_Camera_State_CourseOut(void)
 
     self->angle += 2;
 
+#if _arch_dreamcast
+    MatrixTranslateXYZ(&self->matWorld, -self->position.x, -self->height, -self->position.y, true);
+    MatrixRotateXYZ(&UFO_Camera->matView, self->angleX, self->angle, 0);
+
+    MatrixMultiply(&UFO_Camera->matWorld, &self->matWorld, &UFO_Camera->matView);
+    MatrixScaleXYZ(&self->matWorld, -0x100, 0x100, 0x100);
+
+    MatrixMultiply(&UFO_Camera->matView, &UFO_Camera->matView, &self->matWorld);
+    MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#else
     RSDK.MatrixTranslateXYZ(&self->matWorld, -self->position.x, -self->height, -self->position.y, true);
     RSDK.MatrixRotateXYZ(&UFO_Camera->matView, self->angleX, self->angle, 0);
 
@@ -146,6 +199,7 @@ void UFO_Camera_State_CourseOut(void)
 
     RSDK.MatrixMultiply(&UFO_Camera->matView, &UFO_Camera->matView, &self->matWorld);
     RSDK.MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#endif
 }
 
 void UFO_Camera_State_UFOCaught(void)
@@ -156,6 +210,19 @@ void UFO_Camera_State_UFOCaught(void)
     if (self->angleX > -0x100)
         self->angleX -= 8;
 
+#if _arch_dreamcast
+    self->position.x += Sin1024(self->angle) << 8;
+    self->position.y += Cos1024(self->angle) << 8;
+
+    MatrixTranslateXYZ(&self->matWorld, -self->position.x, -self->height, -self->position.y, true);
+    MatrixRotateXYZ(&UFO_Camera->matView, self->angleX, self->angle, 0);
+
+    MatrixMultiply(&UFO_Camera->matWorld, &self->matWorld, &UFO_Camera->matView);
+    MatrixScaleXYZ(&self->matWorld, -0x100, 0x100, 0x100);
+
+    MatrixMultiply(&UFO_Camera->matView, &UFO_Camera->matView, &self->matWorld);
+    MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#else
     self->position.x += RSDK.Sin1024(self->angle) << 8;
     self->position.y += RSDK.Cos1024(self->angle) << 8;
 
@@ -167,6 +234,7 @@ void UFO_Camera_State_UFOCaught(void)
 
     RSDK.MatrixMultiply(&UFO_Camera->matView, &UFO_Camera->matView, &self->matWorld);
     RSDK.MatrixMultiply(&UFO_Camera->matWorld, &UFO_Camera->matWorld, &self->matWorld);
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR

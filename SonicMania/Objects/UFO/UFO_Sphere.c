@@ -28,9 +28,16 @@ void UFO_Sphere_LateUpdate(void)
 
     Matrix *mat = &UFO_Camera->matWorld;
 
+#if _arch_dreamcast
+    self->worldPos.x = (int32)shz_dot8f(x, y, z, 256.0f, mat->values[0][0], mat->values[0][1], mat->values[0][2], mat->values[0][3]);
+    self->worldPos.y = (int32)shz_dot8f(x, y, z, 256.0f, mat->values[1][0], mat->values[1][1], mat->values[1][2], mat->values[1][3]);
+    self->zdepth     = (int32)shz_dot8f(x, y, z, 256.0f, mat->values[2][0], mat->values[2][1], mat->values[2][2], mat->values[2][3]) >> 8;
+#else
+
     self->worldPos.x = mat->values[0][3] + (y * mat->values[0][1] >> 8) + (z * mat->values[0][2] >> 8) + (x * mat->values[0][0] >> 8);
     self->worldPos.y = mat->values[1][3] + (y * mat->values[1][1] >> 8) + (z * mat->values[1][2] >> 8) + (x * mat->values[1][0] >> 8);
     self->zdepth     = mat->values[2][3] + (y * mat->values[2][1] >> 8) + (z * mat->values[2][2] >> 8) + (x * mat->values[2][0] >> 8);
+#endif
 }
 
 void UFO_Sphere_StaticUpdate(void) {}
@@ -39,6 +46,26 @@ void UFO_Sphere_Draw(void)
 {
     RSDK_THIS(UFO_Sphere);
 
+#if _arch_dreamcast
+    if (self->drawGroup == 4 && self->zdepth >= 0x100  && self->zdepth < 0x50000000) {
+        float rzd = shz_invf(self->zdepth);
+
+        self->direction = self->animator.frameID > 8;
+        self->drawPos.x = (ScreenInfo->center.x + (int)(self->worldPos.x *rzd)) << 16;
+        self->drawPos.y = (ScreenInfo->center.y - (int)(self->worldPos.y *rzd)) << 16;
+        uint32 newscale = self->scaleFactor * rzd;
+        self->scale.x   = newscale;
+        self->scale.y   = newscale;
+
+    }
+
+    Vector4f pos;
+    pos.x = (float)self->drawPos.x;
+    pos.y = (float)self->drawPos.y;
+    pos.z = shz_divf(65536.0f, (float)self->zdepth);
+
+    RSDK.Draw3DSprite(&self->animator, &pos, true);
+#else
     if (self->drawGroup == 4 && self->zdepth >= 0x100) {
         self->direction = self->animator.frameID > 8;
         self->drawPos.x = (ScreenInfo->center.x + (self->worldPos.x << 8) / self->zdepth) << 16;
@@ -48,6 +75,7 @@ void UFO_Sphere_Draw(void)
     }
 
     RSDK.DrawSprite(&self->animator, &self->drawPos, true);
+#endif
 }
 
 void UFO_Sphere_Create(void *data)
@@ -88,9 +116,15 @@ void UFO_Sphere_Create(void *data)
                 self->state       = UFO_Sphere_State_Moving;
 
                 Matrix matrix;
+#if _arch_dreamcast
+                MatrixRotateX(&matrix, self->matAngle.x);
+                MatrixRotateY(&self->matrix, self->matAngle.y);
+                MatrixMultiply(&self->matrix, &matrix, &self->matrix);
+#else
                 RSDK.MatrixRotateX(&matrix, self->matAngle.x);
                 RSDK.MatrixRotateY(&self->matrix, self->matAngle.y);
                 RSDK.MatrixMultiply(&self->matrix, &matrix, &self->matrix);
+#endif
                 break;
         }
 
@@ -118,7 +152,11 @@ void UFO_Sphere_State_Fixed(void)
                 int32 ry = (self->height - player->height - 0xA0000) >> 16;
                 int32 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+                if ((int32)(shz_mag_sqr3f(rx, ry, rz)) < UFO_Player->maxSpeed >> 9) {
+#else
                 if (rx * rx + ry * ry + rz * rz < UFO_Player->maxSpeed >> 9) {
+#endif
                     self->drawGroup = 12;
 
                     self->state = UFO_Sphere_State_Collected;
@@ -144,7 +182,11 @@ void UFO_Sphere_State_Fixed(void)
                     int32 ry = (self->height - player->height - 0xA0000) >> 16;
                     int32 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+                    if ((int32)(shz_mag_sqr3f(rx, ry, rz))< 0x180) {
+#else
                     if (rx * rx + ry * ry + rz * rz < 0x180) {
+#endif
                         RSDK.SetModelAnimation(UFO_Player->tumbleModel, &player->animator, 80, 0, false, 0);
 
                         player->state = UFO_Player_State_Trip;
@@ -172,7 +214,11 @@ void UFO_Sphere_State_Fixed(void)
                     int32 ry = (self->height - player->height - 0xA0000) >> 16;
                     int32 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+                    if ((int32)(shz_mag_sqr3f(rx ,ry, rz)) < 0x180) {
+#else
                     if (rx * rx + ry * ry + rz * rz < 0x180) {
+#endif
                         RSDK.SetModelAnimation(UFO_Player->tumbleModel, &player->animator, 80, 0, false, 0);
 
                         player->state = UFO_Player_State_Trip;
@@ -209,7 +255,16 @@ void UFO_Sphere_State_Moving(void)
     RSDK_THIS(UFO_Sphere);
 
     Matrix *m = &self->matrix;
+#if _arch_dreamcast
+    self->position.x = self->amplitude.x * Cos256(self->angle + (UFO_Setup->timer << self->speed));
+    self->position.y = self->amplitude.y * Sin256(self->angle + (UFO_Setup->timer << self->speed));
+    self->height     = 0;
 
+
+    self->position.x = ((int32)shz_dot6f(self->position.x, self->position.y, 256, m->values[0][0], m->values[0][2], m->values[0][3])) >> 8;
+    self->height     = ((int32)shz_dot6f(self->position.x, self->position.y, 256, m->values[1][0], m->values[1][2], m->values[1][3])) >> 8;
+    self->position.y = ((int32)shz_dot8f(self->position.x, self->height, self->position.y, 256.0f, m->values[2][0], m->values[2][1], m->values[2][2], m->values[2][3])) >> 8;
+#else
     self->position.x = self->amplitude.x * RSDK.Cos256(self->angle + (UFO_Setup->timer << self->speed));
     self->position.y = self->amplitude.y * RSDK.Sin256(self->angle + (UFO_Setup->timer << self->speed));
     self->height     = 0;
@@ -218,6 +273,7 @@ void UFO_Sphere_State_Moving(void)
     self->height     = m->values[1][3] + (self->position.y >> 8) * m->values[1][2] + m->values[1][0] * (self->position.x >> 8);
     self->position.y = m->values[2][3] + (self->position.y >> 8) * m->values[2][2] + m->values[2][0] * (self->position.x >> 8)
                        + m->values[2][1] * (self->height >> 8);
+#endif
 
     self->position.x += self->startPos.x;
     self->position.y += self->startPos.y;
@@ -295,19 +351,34 @@ void UFO_Sphere_EditorDraw(void)
         Vector2 start, end;
 
         // start pos
+#if _arch_dreamcast
+        self->position.x = amplitude.x * Cos256(self->angle) + self->startPos.x;
+        self->position.y = amplitude.y * Sin256(self->angle) + self->startPos.y;
+#else
         self->position.x = amplitude.x * RSDK.Cos256(self->angle) + self->startPos.x;
         self->position.y = amplitude.y * RSDK.Sin256(self->angle) + self->startPos.y;
+#endif
         RSDK.DrawSprite(&self->animator, NULL, false);
 
         // right max
+#if _arch_dreamcast
+        self->position.x = amplitude.x * Cos256(0x00) + self->startPos.x;
+        self->position.y = amplitude.y * Sin256(0x00) + self->startPos.y;
+#else
         self->position.x = amplitude.x * RSDK.Cos256(0x00) + self->startPos.x;
         self->position.y = amplitude.y * RSDK.Sin256(0x00) + self->startPos.y;
+#endif
         start            = self->position;
         RSDK.DrawSprite(&self->animator, NULL, false);
 
         // left max
+#if _arch_dreamcast
+        self->position.x = amplitude.x * Cos256(0x80) + self->startPos.x;
+        self->position.y = amplitude.y * Sin256(0x80) + self->startPos.y;
+#else
         self->position.x = amplitude.x * RSDK.Cos256(0x80) + self->startPos.x;
         self->position.y = amplitude.y * RSDK.Sin256(0x80) + self->startPos.y;
+#endif
         end              = self->position;
         RSDK.DrawSprite(&self->animator, NULL, false);
 

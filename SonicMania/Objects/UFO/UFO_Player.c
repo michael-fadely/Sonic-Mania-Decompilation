@@ -44,6 +44,16 @@ void UFO_Player_Draw(void)
 
         int32 anim = self->animator.animationID;
         if (anim == 2 || anim == 3) {
+#if _arch_dreamcast
+            MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height + 0x100000, self->position.y, true);
+
+            MatrixRotateX(&self->matRotate, self->angleX);
+            MatrixRotateY(&self->matWorld, self->angle + (self->angleZ >> 5));
+
+            MatrixMultiply(&self->matNormal, &self->matRotate, &self->matWorld);
+            MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
+            MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+#else
             RSDK.MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height + 0x100000, self->position.y, true);
 
             RSDK.MatrixRotateX(&self->matRotate, self->angleX);
@@ -53,11 +63,22 @@ void UFO_Player_Draw(void)
             RSDK.MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
             RSDK.MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
             RSDK.MatrixMultiply(&self->matNormal, &self->matNormal, &UFO_Camera->matView);
+#endif
 
             RSDK.AddModelTo3DScene(self->animator.animationID, UFO_Player->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN, &self->matWorld,
                                    &self->matNormal, 0xFFFFFF);
         }
         else {
+#if _arch_dreamcast
+            MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, true);
+
+            MatrixRotateZ(&self->matRotate, self->angleZ >> 5);
+            MatrixRotateY(&self->matWorld, self->angle + (self->angleZ >> (6 - (uint8)(UFO_Setup->machLevel))));
+
+            MatrixMultiply(&self->matNormal, &self->matRotate, &self->matWorld);
+            MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
+            MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+#else
             RSDK.MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, true);
 
             RSDK.MatrixRotateZ(&self->matRotate, self->angleZ >> 5);
@@ -68,6 +89,7 @@ void UFO_Player_Draw(void)
             RSDK.MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
             RSDK.MatrixRotateXYZ(&self->matNormal, 0, self->angle, 0);
             RSDK.MatrixMultiply(&self->matNormal, &self->matNormal, &UFO_Camera->matView);
+#endif
 
             RSDK.AddMeshFrameTo3DScene(self->animator.animationID, UFO_Player->sceneIndex, &self->animator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
                                        &self->matWorld, &self->matNormal, 0xFFFFFF);
@@ -434,8 +456,13 @@ void UFO_Player_State_Run(void)
     else {
         UFO_Player_HandleSpeedUp();
 
+#if _arch_dreamcast
+        int32 x = (self->groundVel >> 10) * Sin1024(self->angle);
+        int32 y = (self->groundVel >> 10) * Cos1024(self->angle);
+#else
         int32 x = (self->groundVel >> 10) * RSDK.Sin1024(self->angle);
         int32 y = (self->groundVel >> 10) * RSDK.Cos1024(self->angle);
+#endif
 
         self->velocity.x += (x - self->velocity.x) / self->velDivisor;
         self->velocity.y += (-y - self->velocity.y) / self->velDivisor;
@@ -501,8 +528,13 @@ void UFO_Player_State_Jump(void)
 
     self->velocity.x -= self->velocity.x >> 8;
     self->velocity.y -= self->velocity.y >> 8;
+#if _arch_dreamcast
+    self->velocity.x += speed * Cos1024(self->angle);
+    self->velocity.y += speed * Sin1024(self->angle);
+#else
     self->velocity.x += speed * RSDK.Cos1024(self->angle);
     self->velocity.y += speed * RSDK.Sin1024(self->angle);
+#endif
 
     self->position.x += self->velocity.x;
     self->position.y += self->velocity.y;
@@ -537,8 +569,13 @@ void UFO_Player_State_Springboard(void)
     self->velocity.x -= self->velocity.x >> 8;
     self->velocity.y -= self->velocity.y >> 8;
 
+#if _arch_dreamcast
+    self->velocity.x += tilt * Cos1024(self->angle);
+    self->velocity.y += tilt * Sin1024(self->angle);
+#else
     self->velocity.x += tilt * RSDK.Cos1024(self->angle);
     self->velocity.y += tilt * RSDK.Sin1024(self->angle);
+#endif
 
     self->position.x += self->velocity.x;
     self->position.y += self->velocity.y;

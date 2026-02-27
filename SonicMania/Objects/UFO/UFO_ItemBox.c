@@ -28,9 +28,15 @@ void UFO_ItemBox_LateUpdate(void)
 
         Matrix *mat = &UFO_Camera->matWorld;
 
+#if _arch_dreamcast
+        self->worldX = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[0][0], mat->values[0][1], mat->values[0][2], mat->values[0][3])) >> 8;
+        self->worldY = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[1][0], mat->values[1][1], mat->values[1][2], mat->values[1][3])) >> 8;
+        self->zdepth = (int32)(shz_dot8f(x, y, z, 256.0f, mat->values[2][0], mat->values[2][1], mat->values[2][2], mat->values[2][3])) >> 8;
+#else
         self->worldX = mat->values[0][3] + (y * mat->values[0][1] >> 8) + (z * mat->values[0][2] >> 8) + (x * mat->values[0][0] >> 8);
         self->worldY = mat->values[1][3] + (y * mat->values[1][1] >> 8) + (z * mat->values[1][2] >> 8) + (x * mat->values[1][0] >> 8);
         self->zdepth = mat->values[2][3] + (y * mat->values[2][1] >> 8) + (z * mat->values[2][2] >> 8) + (x * mat->values[2][0] >> 8);
+#endif
 
         if (self->zdepth >= 0x2000) {
             int32 depth = (int32)((mat->values[0][3] << 8) + (y * mat->values[0][1] & 0xFFFFFF00) + (z * mat->values[0][2] & 0xFFFFFF00)
@@ -56,6 +62,15 @@ void UFO_ItemBox_Draw(void)
 
         RSDK.Prepare3DScene(UFO_ItemBox->sceneIndex);
 
+#if _arch_dreamcast
+        MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, true);
+        MatrixRotateY(&self->matNormal, 8 * UFO_Setup->timer);
+
+        MatrixMultiply(&self->matWorld, &self->matNormal, &self->matTransform);
+        MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
+
+        MatrixRotateXYZ(&self->matNormal, 0, 8 * UFO_Setup->timer, 4 * UFO_Setup->timer);
+#else
         RSDK.MatrixTranslateXYZ(&self->matTransform, self->position.x, self->height, self->position.y, true);
         RSDK.MatrixRotateY(&self->matNormal, 8 * UFO_Setup->timer);
 
@@ -63,6 +78,7 @@ void UFO_ItemBox_Draw(void)
         RSDK.MatrixMultiply(&self->matWorld, &self->matWorld, &UFO_Camera->matWorld);
 
         RSDK.MatrixRotateXYZ(&self->matNormal, 0, 8 * UFO_Setup->timer, 4 * UFO_Setup->timer);
+#endif
 
         RSDK.AddModelTo3DScene(UFO_ItemBox->meshFrames, UFO_ItemBox->sceneIndex, S3D_WIREFRAME_SHADED_SCREEN, &self->matWorld, &self->matNormal,
                                0xFFFF00);
@@ -75,7 +91,16 @@ void UFO_ItemBox_Draw(void)
         self->scale.y   = 0x2000000 / self->zdepth;
     }
 
+#if _arch_dreamcast
+    Vector4f pos;
+    pos.x = (float)self->drawPos.x;
+    pos.y = (float)self->drawPos.y;
+    pos.z = shz_divf(65536.0f*0.5f, (float)self->zdepth);
+
+    RSDK.Draw3DSprite(&self->contentsAnimator, &pos, true);
+#else
     RSDK.DrawSprite(&self->contentsAnimator, &self->drawPos, true);
+#endif
 }
 
 void UFO_ItemBox_Create(void *data)
@@ -135,7 +160,11 @@ void UFO_ItemBox_State_HasContents(void)
                 int32 ry = (self->height - player->height - 0xA0000) >> 16;
                 int32 rz = (self->position.y - player->position.y) >> 16;
 
+#if _arch_dreamcast
+                if ((int32)shz_mag_sqr3f(rx,ry,rz) < UFO_Player->maxSpeed >> 8) {
+#else
                 if (rx * rx + ry * ry + rz * rz < UFO_Player->maxSpeed >> 8) {
+#endif
                     player->gravityStrength = 0x60000;
                     player->onGround        = false;
                     player->state           = UFO_Player_State_Jump;
