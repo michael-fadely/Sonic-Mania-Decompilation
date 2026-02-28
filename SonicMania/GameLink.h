@@ -79,11 +79,7 @@ typedef uint32 color;
 // 0x800 scene objects, 0x40 reserved ones, and 0x100 spare slots for creation
 #define RESERVE_ENTITY_COUNT (0x40)
 #define TEMPENTITY_COUNT     (0x100)
-#ifdef _arch_dreamcast
 #define SCENEENTITY_COUNT    (0x800)
-#else
-#define SCENEENTITY_COUNT    (0x800)
-#endif
 #define ENTITY_COUNT         (RESERVE_ENTITY_COUNT + SCENEENTITY_COUNT + TEMPENTITY_COUNT)
 #define TEMPENTITY_START     (ENTITY_COUNT - TEMPENTITY_COUNT)
 
