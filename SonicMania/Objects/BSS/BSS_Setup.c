@@ -10,6 +10,23 @@
 
 ObjectBSS_Setup *BSS_Setup;
 
+#if _arch_dreamcast
+// there's a weird issue with palette switching here
+// patterns like:
+// page 0 line 14
+// page 0 line 15
+// page 1 line 0
+// page 0 line 0
+// page 0 line 0
+// lead to a noticeable flicker when turning
+// a very simple debounce eliminates most of the flicker
+// except for rare occasions
+static int firstUpdate = 1;
+static int lastPage = 0;
+static int debouncedPage = 0;
+static int debouncedLine = 0;
+#endif
+
 void BSS_Setup_Update(void)
 {
     RSDK_THIS(BSS_Setup);
@@ -18,6 +35,33 @@ void BSS_Setup_Update(void)
 
     ScreenInfo->position.x = 0x100 - ScreenInfo->center.x;
 
+#if _arch_dreamcast
+    // debounce on the palettePage value
+    // update the paletteLine value to use
+    // only when updating the debounced palettePage
+    // eliminates the majority of flicker
+    if (firstUpdate) {
+        debouncedPage = self->palettePage;
+        debouncedLine = self->paletteLine;
+        firstUpdate = 0;
+    } else {
+        if (lastPage == self->palettePage) {
+            debouncedPage = lastPage;
+            debouncedLine = self->paletteLine;
+        }
+
+        lastPage = self->palettePage;
+    }
+
+    if (debouncedPage) {
+        RSDK.CopyPalette(2, 16 * debouncedLine, 0, 128, 16);
+        RSDK.CopyPalette(1, 16 * debouncedLine, 0, 144, 16);
+    }
+    else {
+        RSDK.CopyPalette(1, 16 * debouncedLine, 0, 128, 16);
+        RSDK.CopyPalette(2, 16 * debouncedLine, 0, 144, 16);
+    }
+#else
     if (self->palettePage) {
         RSDK.CopyPalette(2, 16 * self->paletteLine, 0, 128, 16);
         RSDK.CopyPalette(1, 16 * self->paletteLine, 0, 144, 16);
@@ -26,6 +70,7 @@ void BSS_Setup_Update(void)
         RSDK.CopyPalette(1, 16 * self->paletteLine, 0, 128, 16);
         RSDK.CopyPalette(2, 16 * self->paletteLine, 0, 144, 16);
     }
+#endif
 
 #if MANIA_USE_PLUS
     EntityMenuParam *param = MenuParam_GetParam();
@@ -247,7 +292,7 @@ void BSS_Setup_SetupPalette(void)
     for (int32 i = 0; i < 3; ++i) RSDK.SetPaletteEntry(0, 0xA0 + i, RSDK.GetPaletteEntry(1, i + BSS_Palette->startColorID + 2));
 
     // Emerald Colours (Unused in mania)
-    for (int32 i = 0; i < 4; ++i) RSDK.SetPaletteEntry(0, 0xC0 + i, RSDK.GetPaletteEntry(1, i + BSS_Palette->startColorID + 8));
+    for (int32 i = 0; i < 4; ++i) RSDK.SetPaletteEntry(0, 0xD0 + i, RSDK.GetPaletteEntry(1, i + BSS_Palette->startColorID + 8));
 
     // Alt Globe Palettes
     for (int32 i = 0; i < 0x100; i += 0x10) {
