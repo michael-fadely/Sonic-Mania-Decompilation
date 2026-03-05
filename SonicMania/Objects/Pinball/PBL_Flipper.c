@@ -279,7 +279,8 @@ void PBL_Flipper_State_AwaitFlip(void)
     if (self->buttonDown) {
         self->velocity.y = 0x2000;
         self->state      = PBL_Flipper_State_RiseFlipper;
-        RSDK.PlaySfx(PBL_Flipper->sfxFlipper, false, 255);
+        int channel = RSDK.PlaySfx(PBL_Flipper->sfxFlipper, false, 255);
+        RSDK.SetChannelAttributes(channel, 2.0f, 0.0f, 1.0f);
     }
 
     PBL_Flipper_HandlePlayerInteractions();

@@ -371,7 +371,8 @@ void PBL_Crane_StateCrane_Move(void)
     if (++self->timer == 30) {
         self->timer = 0;
         self->state = PBL_Crane_StateCrane_Controlled;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 255);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 255);
+        RSDK.SetChannelAttributes(channel, 2.0f, 0.0f, 0.5f);
     }
 }
 
@@ -384,12 +385,14 @@ void PBL_Crane_StateCrane_Controlled(void)
     if (AnalogStickInfoL[CONT_P1].keyLeft.press || ControllerInfo[CONT_P1].keyLeft.press) {
         ++self->timer;
         self->velocity.x = -0x18000;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 0xFF);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 0xFF);
+        RSDK.SetChannelAttributes(channel, 2.0f, 0.0f, 0.5f);
     }
     else if (AnalogStickInfoL[CONT_P1].keyRight.press || ControllerInfo[CONT_P1].keyRight.press) {
         ++self->timer;
         self->velocity.x = 0x18000;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 0xFF);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneMove, false, 0xFF);
+        RSDK.SetChannelAttributes(channel, 2.0f, 0.0f, 0.5f);
     }
     else if (AnalogStickInfoL[CONT_P1].keyDown.press || ControllerInfo[CONT_P1].keyDown.press) {
         self->timer = 4;
@@ -409,7 +412,8 @@ void PBL_Crane_StateCrane_Controlled(void)
     if (self->timer == 4) {
         self->timer = 0;
         self->state = PBL_Crane_StateCrane_Drop;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneDrop, false, 255);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneDrop, false, 255);
+        RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
     }
 }
 
@@ -432,7 +436,8 @@ void PBL_Crane_StateCrane_Drop(void)
         }
 
         self->state = PBL_Crane_StateCrane_Grab;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneGrab, false, 255);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneGrab, false, 255);
+        RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
     }
 }
 
@@ -455,7 +460,8 @@ void PBL_Crane_StateCrane_Grab(void)
     if (self->craneBackAnimator.frameID == self->craneBackAnimator.frameCount - 1) {
         self->timer = 0;
         self->state = PBL_Crane_StateCrane_Rise;
-        RSDK.PlaySfx(PBL_Crane->sfxCraneRise, false, 255);
+        int channel = RSDK.PlaySfx(PBL_Crane->sfxCraneRise, false, 255);
+        RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
     }
 }
 
@@ -483,17 +489,20 @@ void PBL_Crane_StateCrane_Rise(void)
             crane->velocity.y = -0x20000;
 
             if (crane->displayAnimator.frameID != 5) {
-                RSDK.PlaySfx(PBL_Crane->sfxPrizeGood, false, 255);
+                int channel = RSDK.PlaySfx(PBL_Crane->sfxPrizeGood, false, 255);
+                RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
                 self->state = StateMachine_None;
             }
             else {
-                RSDK.PlaySfx(PBL_Crane->sfxPrizeBad, false, 255);
+                int channel = RSDK.PlaySfx(PBL_Crane->sfxPrizeBad, false, 255);
+                RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
                 self->state = StateMachine_None;
             }
         }
         else {
             parent->state = PBL_Crane_StatePrize_PrizeGet;
-            RSDK.PlaySfx(PBL_Crane->sfxPrizeBad, false, 255);
+            int channel = RSDK.PlaySfx(PBL_Crane->sfxPrizeBad, false, 255);
+            RSDK.SetChannelAttributes(channel, 1.0f, 0.0f, 0.5f);
             self->state = StateMachine_None;
         }
     }
