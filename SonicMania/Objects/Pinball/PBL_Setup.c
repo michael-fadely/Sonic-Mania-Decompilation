@@ -141,8 +141,8 @@ void PBL_Setup_Scanline_TableLow(ScanlineInfo *scanlines)
     int32 sinX = RSDK.Sin1024(-camera->rotationY);
     int32 cosX = RSDK.Cos1024(-camera->rotationY);
     // magic values for "the following scanlines are hacks for Pinball stage"
-    scanlines->deform.x = (uint32)0xFEDCBA09;
-    scanlines->deform.y = (uint32)0xCDEF0123;
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_PINBALL;
     scanlines->position.x = 0;
     scanlines->position.y = 0;
     scanlines++;
@@ -197,8 +197,8 @@ void PBL_Setup_Scanline_TableHigh(ScanlineInfo *scanlines)
     int32 sinX = RSDK.Sin1024(-camera->rotationY);
     int32 cosX = RSDK.Cos1024(-camera->rotationY);
     // magic values for "the following scanlines are hacks for Pinball stage"
-    scanlines->deform.x = (uint32)0xFEDCBA09;
-    scanlines->deform.y = (uint32)0xCDEF0123;
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_PINBALL;
     scanlines->position.x = 0;
     scanlines->position.y = 0;
     scanlines++;
