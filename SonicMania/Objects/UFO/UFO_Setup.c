@@ -224,8 +224,8 @@ void UFO_Setup_Scanline_Playfield(ScanlineInfo *scanlines)
     int32 sinX = RSDK.Sin1024(-camera->angleX);
     int32 cosX = RSDK.Cos1024(-camera->angleX);
     // magic values for "the following scanlines are hacks for a UFO special stage"
-    scanlines->deform.x = (uint32)0xFEDCBA09;
-    scanlines->deform.y = (uint32)0x90ABCDEF;
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_UFO;
     scanlines->position.x = 0;
     scanlines->position.y = 0;
     scanlines++;
