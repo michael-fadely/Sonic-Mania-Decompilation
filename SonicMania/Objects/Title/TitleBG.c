@@ -142,6 +142,13 @@ void TitleBG_Scanline_Island(ScanlineInfo *scanlines)
     int32 sine   = RSDK.Sin1024(-TitleBG->angle) >> 2;
     int32 cosine = RSDK.Cos1024(-TitleBG->angle) >> 2;
 
+#if _arch_dreamcast
+    scanlines->deform.x = SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = SCANLINE_MINOR_MAGIC_ISLAND;
+    scanlines->position.x = sine;
+    scanlines->position.y = cosine;
+    scanlines++;
+#else
     ScanlineInfo *scanlinePtr = &scanlines[168];
     for (int32 i = 16; i < 88; ++i) {
         int32 id  = 0xA00000 / (8 * i);
@@ -154,6 +161,7 @@ void TitleBG_Scanline_Island(ScanlineInfo *scanlines)
         scanlinePtr->position.x = sin - ScreenInfo->center.x * scanlinePtr->deform.x - 0xA000 * sine + 0x2000000;
         ++scanlinePtr;
     }
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR
