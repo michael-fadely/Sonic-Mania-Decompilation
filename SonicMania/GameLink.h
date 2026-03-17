@@ -90,6 +90,14 @@ typedef uint32 color;
 
 #define TILE_SIZE (16)
 
+#if _arch_dreamcast
+// some new magic values
+#define SCANLINE_MAJOR_MAGIC_3DTILES ((uint32)0xFEDCBA09)
+#define SCANLINE_MINOR_MAGIC_UFO ((uint32)0x90ABCDEF)
+#define SCANLINE_MINOR_MAGIC_PINBALL ((uint32)0xCDEF0123)
+#define SCANLINE_MINOR_MAGIC_ISLAND ((uint32)0x890ABCDE)
+#endif
+
 // -------------------------
 // MACROS
 // -------------------------
