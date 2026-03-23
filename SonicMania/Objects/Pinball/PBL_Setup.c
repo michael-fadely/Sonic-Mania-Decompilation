@@ -110,6 +110,7 @@ void PBL_Setup_Scanline_TableLow(ScanlineInfo *scanlines)
     EntityPBL_Camera *camera = RSDK_GET_ENTITY(SLOT_PBL_CAMERA, PBL_Camera);
     RSDK.SetClipBounds(0, 0, camera->centerY, ScreenInfo->size.x, ScreenInfo->size.y);
 
+#if !_arch_dreamcast
     int32 sin    = RSDK.Sin1024(camera->angle) >> 2;
     int32 cos    = RSDK.Cos1024(camera->angle) >> 2;
     int32 negSin = RSDK.Sin1024(-camera->rotationY) >> 2;
@@ -134,12 +135,38 @@ void PBL_Setup_Scanline_TableLow(ScanlineInfo *scanlines)
         cosVal += negCos;
         scanlines++;
     }
+#else
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
+    int32 sinX = RSDK.Sin1024(-camera->rotationY);
+    int32 cosX = RSDK.Cos1024(-camera->rotationY);
+    // magic values for "the following scanlines are hacks for Pinball stage"
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_PINBALL;
+    scanlines->position.x = 0;
+    scanlines->position.y = 0;
+    scanlines++;
+
+    // sin/cos for each camera angle (yaw and pitch)
+    scanlines->deform.x = sin;
+    scanlines->deform.y = cos;
+    scanlines->position.x = sinX;
+    scanlines->position.y = cosX;
+    scanlines++;
+
+    // fixed-point camera poisition
+    scanlines->deform.x = camera->position.x;
+    scanlines->deform.y = camera->worldY;
+    scanlines->position.x = camera->position.y;
+    scanlines->position.y = 0;
+#endif
 }
 void PBL_Setup_Scanline_TableHigh(ScanlineInfo *scanlines)
 {
     EntityPBL_Camera *camera = RSDK_GET_ENTITY(SLOT_PBL_CAMERA, PBL_Camera);
     RSDK.SetClipBounds(0, 0, camera->centerY, ScreenInfo->size.x, ScreenInfo->size.y);
 
+#if !_arch_dreamcast
     int32 sin    = RSDK.Sin1024(camera->angle) >> 2;
     int32 cos    = RSDK.Cos1024(camera->angle) >> 2;
     int32 negSin = RSDK.Sin1024(-camera->rotationY) >> 2;
@@ -164,6 +191,31 @@ void PBL_Setup_Scanline_TableHigh(ScanlineInfo *scanlines)
         cosVal += negCos;
         scanlines++;
     }
+#else
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
+    int32 sinX = RSDK.Sin1024(-camera->rotationY);
+    int32 cosX = RSDK.Cos1024(-camera->rotationY);
+    // magic values for "the following scanlines are hacks for Pinball stage"
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_PINBALL;
+    scanlines->position.x = 0;
+    scanlines->position.y = 0;
+    scanlines++;
+
+    // sin/cos for each camera angle (yaw and pitch)
+    scanlines->deform.x = sin;
+    scanlines->deform.y = cos;
+    scanlines->position.x = sinX;
+    scanlines->position.y = cosX;
+    scanlines++;
+
+    // fixed-point camera poisition
+    scanlines->deform.x = camera->position.x;
+    scanlines->deform.y = (camera->worldY - 0x100000);
+    scanlines->position.x = camera->position.y;
+    scanlines->position.y = 0;
+#endif
 }
 void PBL_Setup_Scanline_PinballBG(ScanlineInfo *scanlines)
 {
