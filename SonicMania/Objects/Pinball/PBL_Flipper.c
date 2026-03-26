@@ -20,6 +20,11 @@ void PBL_Flipper_Update(void)
 
         self->buttonDown = TriggerInfoL[CONT_P1].keyBumper.down || ControllerInfo[CONT_P1].keyA.down || ControllerInfo[CONT_P1].keyX.down
                            || ControllerInfo[CONT_P1].keyC.down;
+
+#if _arch_dreamcast
+        self->buttonPress = self->buttonPress || TriggerInfoL[CONT_P1].keyTrigger.press;
+        self->buttonDown = self->buttonDown || TriggerInfoL[CONT_P1].keyTrigger.down;
+#endif
     }
     else {
         self->buttonPress = TriggerInfoR[CONT_P1].keyBumper.press || ControllerInfo[CONT_P1].keyA.press || ControllerInfo[CONT_P1].keyB.press
@@ -27,6 +32,11 @@ void PBL_Flipper_Update(void)
 
         self->buttonDown = TriggerInfoR[CONT_P1].keyBumper.down || ControllerInfo[CONT_P1].keyA.down || ControllerInfo[CONT_P1].keyB.down
                            || ControllerInfo[CONT_P1].keyC.down;
+
+#if _arch_dreamcast
+        self->buttonPress = self->buttonPress || TriggerInfoR[CONT_P1].keyTrigger.press;
+        self->buttonDown = self->buttonDown || TriggerInfoR[CONT_P1].keyTrigger.down;
+#endif
     }
 
     StateMachine_Run(self->state);
