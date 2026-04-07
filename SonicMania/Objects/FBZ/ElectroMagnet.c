@@ -125,7 +125,14 @@ void ElectroMagnet_State_MagnetActive(void)
     else {
         self->timer--;
 
+        // For the next 3 loops, use foreach_active instead of foreach_all on DC.
+        // This MAY have some gameplay side effects but solves the performance issues.
+
+#if _arch_dreamcast
+        foreach_active(Blaster, blaster)
+#else
         foreach_all(Blaster, blaster)
+#endif
         {
             if (RSDK.CheckObjectCollisionTouchBox(blaster, &ElectroMagnet->hitboxPlayer, self, &self->hitboxMagnetRange)
                 && blaster->animator.animationID < 2 && blaster->state != Blaster_State_Init) {
@@ -134,7 +141,11 @@ void ElectroMagnet_State_MagnetActive(void)
             }
         }
 
+#if _arch_dreamcast
+        foreach_active(MagSpikeBall, spikeBall)
+#else
         foreach_all(MagSpikeBall, spikeBall)
+#endif
         {
             if (RSDK.CheckObjectCollisionTouchBox(spikeBall, &ElectroMagnet->hitboxPlayer, self, &self->hitboxMagnetRange)) {
                 spikeBall->direction = FLIP_X;
@@ -142,7 +153,11 @@ void ElectroMagnet_State_MagnetActive(void)
             }
         }
 
+#if _arch_dreamcast
+        foreach_active(MagPlatform, platform)
+#else
         foreach_all(MagPlatform, platform)
+#endif
         {
             if (RSDK.CheckObjectCollisionTouchBox(platform, &ElectroMagnet->hitboxPlayer, self, &self->hitboxMagnetRange)) {
                 platform->state  = MagPlatform_State_Rise;
