@@ -299,7 +299,7 @@ void FarPlane_Scanline_FarPlaneView(ScanlineInfo *scanline)
     }
 
     RSDK.CopyPalette(0, 0, 4, 0, 128);
-    RSDK.SetActivePalette(4, 0, ScreenInfo->size.y);
+    RSDK.SetActivePalette(3, 0, ScreenInfo->size.y);
 }
 
 #if GAME_INCLUDE_EDITOR
