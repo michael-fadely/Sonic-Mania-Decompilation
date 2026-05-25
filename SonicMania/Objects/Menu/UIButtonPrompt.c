@@ -69,27 +69,30 @@ void UIButtonPrompt_LateUpdate(void)
     if (control && control->heading && self->headingAnchor) {
         EntityUIHeading *heading = (EntityUIHeading *)control->heading;
 
+        int32 leftOff  = TO_FIXED(ScreenInfo->center.x - 24);
+        int32 rightOff = TO_FIXED(ScreenInfo->center.x - 88);
+
         switch (self->headingAnchor) {
             default:
             case UIBUTTONPROMPT_ANCHOR_NONE: break;
 
             case UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW1:
-                self->position.x = heading->position.x - TO_FIXED(188);
+                self->position.x = heading->position.x - leftOff;
                 self->position.y = heading->position.y - TO_FIXED(8);
                 break;
 
             case UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW1:
-                self->position.x = heading->position.x + TO_FIXED(124);
+                self->position.x = heading->position.x + rightOff;
                 self->position.y = heading->position.y - TO_FIXED(8);
                 break;
 
             case UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW2:
-                self->position.x = heading->position.x - TO_FIXED(188);
+                self->position.x = heading->position.x - leftOff;
                 self->position.y = heading->position.y + TO_FIXED(16);
                 break;
 
             case UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW2:
-                self->position.x = heading->position.x + TO_FIXED(124);
+                self->position.x = heading->position.x + rightOff;
                 self->position.y = heading->position.y + TO_FIXED(16);
                 break;
         }
@@ -117,7 +120,8 @@ void UIButtonPrompt_Draw(void)
 
     UIButtonPrompt_SetButtonSprites();
 
-    RSDK.DrawSprite(&self->decorAnimator, NULL, false);
+    if (ScreenInfo->size.x >= 424)
+        RSDK.DrawSprite(&self->decorAnimator, NULL, false);
 
     self->drawFX = FX_SCALE;
     RSDK.DrawSprite(&self->buttonAnimator, NULL, false);
