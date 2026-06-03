@@ -224,9 +224,12 @@ void LRZConveyor_DrawWheels(void)
 void LRZConveyor_DrawDeformedLine(int32 startX, int32 startY, int32 endX, int32 endY, int32 offsetX, int32 offsetY, int32 len, color *color)
 {
     RSDK_THIS(LRZConveyor);
-
-    int32 count = (self->length >> 1) + ((self->length & 1) != 0);
-
+#if _arch_dreamcast
+    // too many polygons to maintain 60 fps without scaling it down
+    int32 count = ((self->length >> 1) + ((self->length & 1) != 0)) / 4;
+#else
+    int32 count = ((self->length >> 1) + ((self->length & 1) != 0));
+#endif
     int32 currentX = startX;
     int32 currentY = startY;
     for (int32 i = 0; i < count; ++i) {
@@ -245,7 +248,11 @@ void LRZConveyor_DrawDeformedLine(int32 startX, int32 startY, int32 endX, int32 
         currentY += (endY - startY) / count;
 
         uint32 lineColor = color ? *color : LRZConveyor->lineColors[(colorID % count) & 0x3F];
+#if _arch_dreamcast
+        RSDK.DrawLine(prevX + offsetX, prevY + offsetY, currentX + offsetX, currentY + offsetY, lineColor, 0xFF, INK_NONE, false); // original 0x7F alpha makes this use TR
+#else
         RSDK.DrawLine(prevX + offsetX, prevY + offsetY, currentX + offsetX, currentY + offsetY, lineColor, 0x7F, INK_NONE, false);
+#endif
 
         ++len;
     }
