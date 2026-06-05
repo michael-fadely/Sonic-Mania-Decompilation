@@ -224,8 +224,8 @@ void UFO_Setup_Scanline_Playfield(ScanlineInfo *scanlines)
     // magic values for "the following scanlines are hacks for a UFO special stage"
     scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
     scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_UFO;
-    scanlines->position.x = 0;
-    scanlines->position.y = 0;
+    scanlines->position.x = UFO_Plasma ? (int32)UFO_Plasma->aniFrames : 0;
+    scanlines->position.y = (int32)UFO_Setup->timer;
     scanlines++;
 
     // sin/cos for each camera angle (yaw and pitch)
