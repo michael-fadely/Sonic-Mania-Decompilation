@@ -49,14 +49,102 @@ void UIDiorama_StaticUpdate(void)
     if (!(UIWidgets->timer & 3))
         RSDK.RotatePalette(0, 60, 63, true);
 
+#if _arch_dreamcast
+    foreach_all(UIDiorama, diorama) { RSDK.AddDrawListRef(diorama->drawGroup - 1, RSDK.GetEntitySlot(diorama)); }
+#else
     foreach_all(UIDiorama, diorama) { RSDK.AddDrawListRef(diorama->drawGroup + 1, RSDK.GetEntitySlot(diorama)); }
+#endif
 }
+
+#if _arch_dreamcast
+static void UIDiorama_DrawCornerTriangle(int32 clipX1, int32 clipY1, int32 clipX2, int32 clipY2)
+{
+    int32 margin       = 4;
+    int32 triTopX      = clipX2 + margin;
+    int32 triTopY      = clipY1 - margin;
+    int32 triBotLeftX  = 80 - margin;
+    int32 triBotY      = clipY2 + margin;
+    int32 triBotRightX = clipX2 + margin;
+
+    Vector2 triVerts[3];
+    triVerts[0].x = TO_FIXED(triTopX);
+    triVerts[0].y = TO_FIXED(triTopY);
+    triVerts[1].x = TO_FIXED(triBotLeftX);
+    triVerts[1].y = TO_FIXED(triBotY);
+    triVerts[2].x = TO_FIXED(triBotRightX);
+    triVerts[2].y = TO_FIXED(triBotY);
+    RSDK.DrawFace(triVerts, 3, 0xF0, 0xC8, 0x00, 0xFF, INK_NONE);
+
+    foreach_active(UIBackground, bg)
+    {
+        color *colorPtrs = UIBackground->activeColors;
+        int32 bgTimer    = bg->timer;
+
+        Vector2 drawPos;
+        drawPos.x = ((RSDK.Sin512(bgTimer) >> 3) + 112) * RSDK.Sin256(bgTimer) >> 8;
+        drawPos.y = ((RSDK.Sin512(bgTimer) >> 3) + 112) * RSDK.Cos256(bgTimer) >> 8;
+        RSDK.DrawCircleOutlineClipped(ScreenInfo->center.x, ScreenInfo->center.y,
+                                     (RSDK.Sin512(bgTimer) >> 3) + 108, (RSDK.Sin512(bgTimer) >> 3) + 116,
+                                     colorPtrs[1], 0xFF, INK_NONE, true,
+                                     triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+
+        RSDK.DrawCircleClipped(drawPos.x + ScreenInfo->center.x, drawPos.y + ScreenInfo->center.y, 32,
+                               colorPtrs[1], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+        RSDK.DrawCircleClipped(ScreenInfo->center.x - drawPos.x, ScreenInfo->center.y - drawPos.y, 16,
+                               colorPtrs[1], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+        RSDK.DrawCircleClipped(drawPos.x + ScreenInfo->center.x, drawPos.y + ScreenInfo->center.y, 26,
+                               colorPtrs[1], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+
+        drawPos.x = ((RSDK.Cos512(bgTimer) >> 3) + 144) * RSDK.Cos256(bgTimer) >> 8;
+        drawPos.y = ((RSDK.Cos512(bgTimer) >> 3) + 144) * RSDK.Sin256(bgTimer) >> 8;
+        RSDK.DrawCircleOutlineClipped(ScreenInfo->center.x, ScreenInfo->center.y,
+                                     (RSDK.Cos512(bgTimer) >> 3) + 140, (RSDK.Cos512(bgTimer) >> 3) + 148,
+                                     colorPtrs[2], 0xFF, INK_NONE, true,
+                                     triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+
+        RSDK.DrawCircleClipped(drawPos.x + ScreenInfo->center.x, drawPos.y + ScreenInfo->center.y, 32,
+                               colorPtrs[2], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+        RSDK.DrawCircleClipped(ScreenInfo->center.x - drawPos.x, ScreenInfo->center.y - drawPos.y, 16,
+                               colorPtrs[2], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+        RSDK.DrawCircleClipped(drawPos.x + ScreenInfo->center.x, drawPos.y + ScreenInfo->center.y, 26,
+                               colorPtrs[0], 0xFF, INK_NONE, true,
+                               triTopX, triTopY, triBotLeftX, triBotY, triBotRightX);
+    }
+}
+#endif
 
 void UIDiorama_Draw(void)
 {
     RSDK_THIS(UIDiorama);
 
     if (self->timer <= 0) {
+#if _arch_dreamcast
+        if (SceneInfo->currentDrawGroup == self->drawGroup - 1) {
+            self->dioramaPos.x  = self->position.x;
+            self->dioramaPos.y  = self->position.y - 0x510000;
+            self->dioramaSize.x = 0x1260000;
+            self->dioramaSize.y = 0xA20000;
+
+            int32 clipX1 = FROM_FIXED(self->dioramaPos.x) - ScreenInfo->position.x;
+            int32 clipY1 = FROM_FIXED(self->dioramaPos.y) - ScreenInfo->position.y;
+            int32 clipX2 = clipX1 + FROM_FIXED(self->dioramaSize.x);
+            int32 clipY2 = clipY1 + FROM_FIXED(self->dioramaSize.y);
+            RSDK.SetClipBounds(SceneInfo->currentScreenID, clipX1, clipY1, clipX2, clipY2);
+
+            StateMachine_Run(self->stateDraw);
+
+            RSDK.DrawSprite(&self->maskAnimator, NULL, false);
+
+            RSDK.SetClipBounds(SceneInfo->currentScreenID, 0, 0, ScreenInfo->size.x, ScreenInfo->size.y);
+
+            UIDiorama_DrawCornerTriangle(clipX1, clipY1, clipX2, clipY2);
+        }
+#else
         if (SceneInfo->currentDrawGroup == self->drawGroup) {
             RSDK.DrawSprite(&self->maskAnimator, NULL, false);
 
@@ -72,9 +160,22 @@ void UIDiorama_Draw(void)
         self->inkEffect = INK_MASKED;
         StateMachine_Run(self->stateDraw);
         self->inkEffect = INK_NONE;
+#endif
     }
     else {
-        RSDK.DrawSprite(&self->staticAnimator, NULL, false);
+#if _arch_dreamcast
+        if (SceneInfo->currentDrawGroup == self->drawGroup - 1) {
+            RSDK.DrawSprite(&self->staticAnimator, NULL, false);
+
+            int32 clipX1 = FROM_FIXED(self->position.x) - ScreenInfo->position.x;
+            int32 clipY1 = FROM_FIXED(self->position.y - 0x510000) - ScreenInfo->position.y;
+            int32 clipX2 = clipX1 + FROM_FIXED(0x1260000);
+            int32 clipY2 = clipY1 + FROM_FIXED(0xA20000);
+            UIDiorama_DrawCornerTriangle(clipX1, clipY1, clipX2, clipY2);
+        }
+#else
+            RSDK.DrawSprite(&self->staticAnimator, NULL, false);
+#endif
     }
 }
 
@@ -599,6 +700,39 @@ void UIDiorama_Draw_ManiaMode(void)
     int32 frameWidths[] = { 0x400, 0x200, 0x200, 0x200, 0x200, 0x129 };
     int32 frameSpeeds[] = { 0x100, 0x30, 0x30, 0x30, 0x60, 0x80 };
 
+#if _arch_dreamcast
+    // DC: sky background first (farthest), then parallax back-to-front, then players (closest)
+    RSDK.DrawRect(self->dioramaPos.x, self->dioramaPos.y, self->dioramaSize.x, self->dioramaSize.y, 0x2001A0, 255, INK_NONE, false);
+
+    // Draw Stage "Parallax" — reverse order so background layers get lower z (farther)
+    int32 offsets[]            = { 0, info->clouds1ScrollPos, info->clouds2ScrollPos, info->clouds3ScrollPos, 0, 0 };
+    Animator *levelAnimators[] = { &info->terrainAnimator, &info->clouds1Animator,   &info->clouds2Animator,
+                                   &info->clouds3Animator, &info->mountainsAnimator, &info->backgroundAnimator };
+
+    for (int32 i = 5; i >= 0; --i) {
+        drawPos     = self->position;
+        int32 width = frameWidths[i] << 16;
+
+        int32 offset2 = -(int32)((offsets[i] << 8) + ((frameSpeeds[i] * (uint32)(info->scrollPos >> 4)) >> 4));
+        while (offset2 < -0x10000 * frameWidths[i]) {
+            offset2 += width;
+        }
+
+        drawPos.x += offset2;
+        RSDK.DrawSprite(levelAnimators[i], &drawPos, false);
+
+        drawPos.x += width;
+        RSDK.DrawSprite(levelAnimators[i], &drawPos, false);
+    }
+
+    drawPos.x = info->playerPos.x + self->position.x + 0x380000;
+    drawPos.y = info->playerPos.y + self->position.y + 0x1D0000;
+    RSDK.DrawSprite(&info->tailsAnimator, &drawPos, false);
+
+    drawPos.y -= 0x40000;
+    drawPos.x += 0x280000;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
+#else
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         drawPos.x = self->position.x + 0x380000;
         drawPos.y = self->position.y + 0x1D0000;
@@ -634,6 +768,7 @@ void UIDiorama_Draw_ManiaMode(void)
         // Draw Sky blue rect to fill in the sky BG for any pixels that aren't covered up
         RSDK.DrawRect(self->dioramaPos.x, self->dioramaPos.y, self->dioramaSize.x, self->dioramaSize.y, 0x2001A0, 255, INK_MASKED, false);
     }
+#endif
 }
 
 void UIDiorama_Draw_PlusUpsell(void)
@@ -647,6 +782,66 @@ void UIDiorama_Draw_PlusUpsell(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    color rectColor = info->showFlash ? 0x01D870 : 0xF0C801;
+    RSDK.DrawRect(self->dioramaPos.x, self->dioramaPos.y, self->dioramaSize.x, self->dioramaSize.y, rectColor, 0xFF, INK_NONE, false);
+
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    drawPos.x = self->position.x + 0x500000;
+    drawPos.y = self->position.y + 0x2E0000;
+    RSDK.DrawSprite(&info->logoAnimator, &drawPos, false);
+    RSDK.DrawSprite(&info->arrowAnimator, &drawPos, false);
+
+    drawPos.y += info->plusPos.y;
+    RSDK.DrawSprite(&info->plusAnimator, &drawPos, false);
+
+    self->inkEffect = INK_ADD;
+    self->alpha     = 0xFF;
+    if (info->showFlash) {
+        drawPos.x = self->position.x + 0x500000;
+        drawPos.y = self->position.y + 0x2E0000;
+        RSDK.DrawSprite(&info->lightningAnimator, &drawPos, false);
+    }
+
+    self->inkEffect = INK_NONE;
+    drawPos.x       = self->position.x + 0x840000;
+    drawPos.y       = self->position.y - 0x480000;
+
+    int32 length[5];
+    length[0] = info->lineCount;
+    length[1] = info->linePos[0];
+    length[2] = info->linePos[1];
+    length[3] = info->linePos[2];
+    length[4] = info->linePos[3];
+
+    int32 lineCount = length[0];
+    for (int32 i = 0; i < lineCount + 1; ++i) {
+        int32 start = 0;
+        int32 end   = 0;
+        if (i > 0)
+            start = length[i] + 1;
+
+        if (i >= lineCount)
+            end = self->texts[0].length;
+        else
+            end = length[i + 1];
+
+        int32 width = -0x8000 * RSDK.GetStringWidth(UIWidgets->fontFrames, 0, &self->texts[0], start, end, 0);
+        drawPos.x += width;
+        RSDK.DrawText(&info->textAnimator, &drawPos, &self->texts[0], start, end, ALIGN_LEFT, 0, NULL, NULL, false);
+
+        drawPos.x -= width;
+        drawPos.y += 0x120000;
+    }
+
+    drawPos         = self->position;
+    self->inkEffect = INK_ALPHA;
+    self->alpha     = info->flashAlpha;
+    RSDK.DrawSprite(&info->flashAnimator, &drawPos, false);
+
+    self->inkEffect = INK_NONE;
+#else
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
 
@@ -708,6 +903,7 @@ void UIDiorama_Draw_PlusUpsell(void)
 
         self->inkEffect = INK_NONE;
     }
+#endif
 }
 
 void UIDiorama_Draw_EncoreMode(void)
@@ -721,6 +917,33 @@ void UIDiorama_Draw_EncoreMode(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    info->dioramaAnimator.frameID = 0;
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    self->inkEffect = INK_NONE;
+    drawPos.y += 0x200000;
+    drawPos.x += 0x500000;
+    int32 x = drawPos.x;
+    RSDK.DrawSprite(&info->buttonAnimator, &drawPos, false);
+
+    drawPos.x += 0xE0000;
+    RSDK.DrawSprite(&info->mightyAnimator, &drawPos, false);
+
+    drawPos.x -= 0x1C0000;
+    RSDK.DrawSprite(&info->rayAnimator, &drawPos, false);
+
+    drawPos.x = x;
+    RSDK.DrawSprite(&info->capsuleAnimator, &drawPos, false);
+
+    self->inkEffect = INK_ADD;
+    self->alpha     = 0x80;
+    RSDK.DrawSprite(&info->glassAnimator, &drawPos, false);
+
+    self->inkEffect               = INK_NONE;
+    info->dioramaAnimator.frameID = 1;
+    RSDK.DrawSprite(&info->dioramaAnimator, &self->position, false);
+#else
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         info->dioramaAnimator.frameID = 0;
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
@@ -749,6 +972,7 @@ void UIDiorama_Draw_EncoreMode(void)
         info->dioramaAnimator.frameID = 1;
         RSDK.DrawSprite(&info->dioramaAnimator, &self->position, false);
     }
+#endif
 }
 
 void UIDiorama_Draw_TimeAttack(void)
@@ -762,6 +986,63 @@ void UIDiorama_Draw_TimeAttack(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    info->dioramaAnimator.frameID = 0;
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    self->inkEffect = INK_NONE;
+    drawPos.x += 0x340000;
+    drawPos.y -= 0x30000;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
+
+    drawPos.x = self->position.x + 0x9B0000;
+    drawPos.y = self->position.y - 0x400000;
+    for (int32 i = 0; i < 3; ++i) {
+        RSDK.DrawSprite(&info->ringAnimator, &drawPos, false);
+        drawPos.x += 0x1C0000;
+    }
+
+    Vector2 gatePos;
+    gatePos.x = self->position.x + 0x6C0000;
+    gatePos.y = self->position.y - 0x130000;
+    RSDK.DrawSprite(&info->gateTopAnimator, &gatePos, false);
+    RSDK.DrawSprite(&info->gateBaseAnimator, &gatePos, false);
+
+    self->drawFX                   = FX_SCALE;
+    self->scale.y                  = 0x200;
+    drawPos.x                      = gatePos.x;
+    drawPos.y                      = gatePos.y;
+    self->scale.x                  = abs(RSDK.Sin512(0));
+    drawPos.x                      = gatePos.x + 0x30000;
+    info->gateFinsAnimator.frameID = 1;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    self->scale.x                  = abs(RSDK.Cos512(0));
+    drawPos.x                      = gatePos.x - 0x30000;
+    info->gateFinsAnimator.frameID = 0;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    drawPos.x                      = gatePos.x + 0x180 * RSDK.Cos512(0);
+    info->gateFinsAnimator.frameID = 1;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    self->scale.x                  = abs(RSDK.Sin512(0));
+    drawPos.x                      = gatePos.x + 0xB40 * RSDK.Cos512(0);
+    info->gateFinsAnimator.frameID = 2;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    self->scale.x                  = abs(RSDK.Sin512(0));
+    drawPos.x                      = gatePos.x + 0x180 * RSDK.Cos512(0);
+    info->gateFinsAnimator.frameID = 0;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    self->scale.x                  = abs(RSDK.Cos512(0));
+    drawPos.x                      = gatePos.x - 0xB40 * RSDK.Sin512(0);
+    info->gateFinsAnimator.frameID = 2;
+    RSDK.DrawSprite(&info->gateFinsAnimator, &drawPos, false);
+
+    self->drawFX = FX_NONE;
+#else
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         info->dioramaAnimator.frameID = 0;
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
@@ -820,6 +1101,7 @@ void UIDiorama_Draw_TimeAttack(void)
 
         self->drawFX = FX_NONE;
     }
+#endif
 }
 
 void UIDiorama_Draw_Competition(void)
@@ -833,6 +1115,48 @@ void UIDiorama_Draw_Competition(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    RSDK.DrawRect(self->dioramaPos.x, self->dioramaPos.y, self->dioramaSize.x, self->dioramaSize.y, 0x860F0, 255, INK_NONE, false);
+
+    drawPos                       = self->position;
+    info->dioramaAnimator.frameID = 0;
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    drawPos.y += info->terrainPos.y;
+    for (int32 i = 0; i < 11; ++i) {
+        drawPos.x                     = self->position.x;
+        info->dioramaAnimator.frameID = i + 1;
+
+        int32 scrollPos = -(info->scrollPos[i] << 8);
+        if (scrollPos < -0x2000000)
+            scrollPos += ((-0x2000000 - scrollPos) & 0xFE000000) + 0x2000000;
+        drawPos.x += scrollPos;
+        RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+        drawPos.x += 0x2000000;
+        RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+    }
+
+    drawPos.x = self->position.x + 0xAB0000;
+    drawPos.y = self->position.y - 0x190000;
+    for (int32 i = 0; i < 3; ++i) {
+        drawPos.x += 0x200000;
+        RSDK.DrawSprite(&info->ringAnimator, &drawPos, false);
+    }
+
+    drawPos = info->platformPos;
+    RSDK.DrawSprite(&info->platformAnimator, &drawPos, false);
+
+    self->inkEffect   = INK_NONE;
+    int32 playerCount = API.CheckDLC(DLC_PLUS) ? 4 : 2;
+
+    Vector2 *playerPos[]        = { &info->tailsPos, &info->knuxPos, &info->rayPos, &info->mightyPos };
+    Animator *playerAnimators[] = { &info->tailsAnimator, &info->knuxAnimator, &info->rayAnimator, &info->mightyAnimator };
+
+    for (int32 i = 0; i < playerCount; ++i) {
+        RSDK.DrawSprite(playerAnimators[i], playerPos[i], false);
+    }
+#else
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         drawPos.x = self->position.x + 0xAB0000;
         drawPos.y = self->position.y - 0x190000;
@@ -876,6 +1200,7 @@ void UIDiorama_Draw_Competition(void)
             RSDK.DrawSprite(playerAnimators[i], playerPos[i], false);
         }
     }
+#endif
 }
 
 void UIDiorama_Draw_Options(void)
@@ -889,6 +1214,42 @@ void UIDiorama_Draw_Options(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    Vector2 *positions[]  = { &info->itemPos, &info->contPos, &info->audioPos };
+    Vector2 *offsets[]    = { &info->itemOffset, &info->contOffset, &info->audioOffset };
+    int32 alpha[]         = { info->itemAlpha, info->contAlpha, info->audioAlpha };
+    Animator *animators[] = { &info->itemConstellationAnimator, &info->contConstellationAnimator, &info->audioConstellationAnimator };
+
+    for (int32 i = 0; i < 3; ++i) {
+        drawPos = self->position;
+        drawPos.x += positions[i]->x;
+        drawPos.y += positions[i]->y;
+        drawPos.x += offsets[i]->x;
+        drawPos.y += offsets[i]->y;
+
+        self->alpha     = alpha[i];
+        self->inkEffect = INK_ALPHA;
+        RSDK.DrawSprite(animators[i], &drawPos, false);
+
+        self->inkEffect = INK_ADD;
+        RSDK.DrawSprite(animators[i], &drawPos, false);
+    }
+
+    self->inkEffect = INK_NONE;
+    drawPos.x       = self->position.x + 0x380000;
+    drawPos.y       = self->position.y + 0x1E0000;
+    RSDK.DrawSprite(&info->knuxAnimator, &drawPos, false);
+
+    drawPos.x = self->position.x + 0x6C0000;
+    drawPos.y = self->position.y + 0x210000;
+    RSDK.DrawSprite(&info->tailsAnimator, &drawPos, false);
+
+    drawPos.y -= 0x30000;
+    drawPos.x += 0x180000;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
+#else
     if (SceneInfo->currentDrawGroup != self->drawGroup) {
         Vector2 *positions[]  = { &info->itemPos, &info->contPos, &info->audioPos };
         Vector2 *offsets[]    = { &info->itemOffset, &info->contOffset, &info->audioOffset };
@@ -927,6 +1288,7 @@ void UIDiorama_Draw_Options(void)
     else {
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
     }
+#endif
 }
 
 void UIDiorama_Draw_Extras(void)
@@ -939,6 +1301,18 @@ void UIDiorama_Draw_Extras(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    self->inkEffect = INK_NONE;
+    drawPos.x       = self->position.x + 0x520000;
+    drawPos.y       = self->position.y - 0x150000;
+    RSDK.DrawSprite(&info->medalAnimator, &drawPos, false);
+
+    drawPos.x = self->position.x + 0x520000;
+    drawPos.y = self->position.y + 0x390000;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
+#else
     if (SceneInfo->currentDrawGroup != self->drawGroup) {
         self->inkEffect = INK_NONE;
         drawPos.x       = self->position.x + 0x520000;
@@ -952,6 +1326,7 @@ void UIDiorama_Draw_Extras(void)
     else {
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
     }
+#endif
 }
 
 void UIDiorama_Draw_Exit(void)
@@ -964,6 +1339,16 @@ void UIDiorama_Draw_Exit(void)
 
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
+#if _arch_dreamcast
+    RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
+
+    self->inkEffect = INK_NONE;
+    drawPos.x += 0x480000;
+    drawPos.y += 0xD0000;
+    drawPos.x += info->sonicPos.x;
+    drawPos.y += info->sonicPos.y;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
+#else
     if (SceneInfo->currentDrawGroup != self->drawGroup) {
         self->inkEffect = INK_NONE;
         drawPos.x += 0x480000;
@@ -975,6 +1360,7 @@ void UIDiorama_Draw_Exit(void)
     else {
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
     }
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR
