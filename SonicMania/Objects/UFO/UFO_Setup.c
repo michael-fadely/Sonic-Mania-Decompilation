@@ -216,9 +216,8 @@ void UFO_Setup_Scanline_Playfield(ScanlineInfo *scanlines)
         cosVal += cosX;
     }
 #else
-    int32 sin  = Sin1024(camera->angle);
-    int32 cos  = Cos1024(camera->angle);
-    // avoid ICE
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
     int32 sinX = RSDK.Sin1024(-camera->angleX);
     int32 cosX = RSDK.Cos1024(-camera->angleX);
     // magic values for "the following scanlines are hacks for a UFO special stage"
@@ -250,8 +249,8 @@ void UFO_Setup_Scanline_3DFloor(ScanlineInfo *scanlines)
     RSDK.SetClipBounds(0, 0, camera->clipY + 24, ScreenInfo->size.x, ScreenInfo->size.y);
 
 #if _arch_dreamcast
-    int32 sin  = Sin1024(camera->angle);
-    int32 cos  = Cos1024(camera->angle);
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
     int32 sinX = RSDK.Sin1024(-camera->angleX);
     int32 cosX = RSDK.Cos1024(-camera->angleX);
 
@@ -306,8 +305,8 @@ void UFO_Setup_Scanline_3DRoof(ScanlineInfo *scanlines)
     RSDK.SetClipBounds(0, 0, 0, ScreenInfo->size.x, camera->clipY - 48);
 
 #if _arch_dreamcast
-    int32 sin  = Sin1024(camera->angle);
-    int32 cos  = Cos1024(camera->angle);
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
     int32 sinX = RSDK.Sin1024(-camera->angleX);
     int32 cosX = RSDK.Cos1024(-camera->angleX);
 
