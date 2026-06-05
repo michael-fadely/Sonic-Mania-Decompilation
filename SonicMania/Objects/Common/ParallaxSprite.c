@@ -56,9 +56,24 @@ void ParallaxSprite_Draw(void)
         RSDK.GetFrame(ParallaxSprite->aniFrames, self->aniID, 0)->sprX = self->sprX + ((self->xSpeed + (Zone->timer << self->timerSpeed)) & 0x7F);
     }
 
+#if _arch_dreamcast
+    // this makes the waves appear in the INK_MASKED parallax layer on CPZ2
+    if (self->attribute == PARALLAXSPRITE_ATTR_SHIFT) {
+        float oldDepth = RSDK.GetDepth();
+        int32 oldClipX1 = screen->clipBound_X1;
+        int32 oldClipY1 = screen->clipBound_Y1;
+        int32 oldClipX2 = screen->clipBound_X2;
+        int32 oldClipY2 = screen->clipBound_Y2;
+        RSDK.SetDepth(1.06f);
+        RSDK.SetClipBounds(SceneInfo->currentScreenID, 0, 0, ScreenInfo->size.x, ScreenInfo->size.y);
+        RSDK.DrawSprite(&self->animator, &drawPos, true);
+        RSDK.SetClipBounds(SceneInfo->currentScreenID, oldClipX1, oldClipY1, oldClipX2, oldClipY2);
+        RSDK.SetDepth(oldDepth);
+    }
+    else
+#endif
     RSDK.DrawSprite(&self->animator, &drawPos, true);
 }
-
 void ParallaxSprite_Create(void *data)
 {
     RSDK_THIS(ParallaxSprite);
@@ -128,9 +143,16 @@ void ParallaxSprite_Create(void *data)
             self->sprX       = RSDK.GetFrame(ParallaxSprite->aniFrames, self->aniID, 1)->sprX;
             self->timerSpeed = ZONE_RAND(0, 2);
             self->xSpeed     = ZONE_RAND(0, 128);
-            self->inkEffect  = INK_MASKED;
-            self->visible    = true;
-            self->state      = NULL;
+#if _arch_dreamcast
+            // this makes the waves appear in the INK_MASKED parallax layer on CPZ2
+            self->inkEffect = INK_NONE;
+            self->alpha = 0xFF;
+            self->drawGroup = Zone->fgDrawGroup[0];
+#else
+            self->inkEffect = INK_MASKED;
+#endif
+            self->visible = true;
+            self->state   = NULL;
             break;
     }
 
