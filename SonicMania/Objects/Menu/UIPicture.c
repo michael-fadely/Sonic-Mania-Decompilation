@@ -46,6 +46,7 @@ void UIPicture_Create(void *data)
     RSDK.SetSpriteAnimation(UIPicture->aniFrames, self->listID, &self->animator, true, self->frameID);
 
     if (!SceneInfo->inEditor) {
+#ifdef _arch_dreamcast
         if (RSDK.CheckSceneFolder("Logos") && ScreenInfo->size.x < 424) {
             int32 center  = 0x100 << 16;
             int32 offset  = self->position.x - center;
@@ -70,6 +71,7 @@ void UIPicture_Create(void *data)
                 }
             }
         }
+#endif
 
         if (RSDK.CheckSceneFolder("Menu")) {
             self->active    = ACTIVE_BOUNDS;

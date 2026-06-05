@@ -69,8 +69,13 @@ void UIButtonPrompt_LateUpdate(void)
     if (control && control->heading && self->headingAnchor) {
         EntityUIHeading *heading = (EntityUIHeading *)control->heading;
 
+#ifdef _arch_dreamcast
         int32 leftOff  = TO_FIXED(ScreenInfo->center.x - 24);
         int32 rightOff = TO_FIXED(ScreenInfo->center.x - 88);
+#else
+        int32 leftOff  = TO_FIXED(188);
+        int32 rightOff = TO_FIXED(124);
+#endif
 
         switch (self->headingAnchor) {
             default:
@@ -120,8 +125,12 @@ void UIButtonPrompt_Draw(void)
 
     UIButtonPrompt_SetButtonSprites();
 
+#ifdef _arch_dreamcast
     if (ScreenInfo->size.x >= 424)
         RSDK.DrawSprite(&self->decorAnimator, NULL, false);
+#else
+    RSDK.DrawSprite(&self->decorAnimator, NULL, false);
+#endif
 
     self->drawFX = FX_SCALE;
     RSDK.DrawSprite(&self->buttonAnimator, NULL, false);

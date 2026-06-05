@@ -33,7 +33,11 @@ void UIDialog_Draw(void)
 
     UIDialog_DrawBGShapes();
 
+#ifdef _arch_dreamcast
     int32 xScale = ScreenInfo->size.x < 424 ? ScreenInfo->size.x * 256 / 424 : 256;
+#else
+    int32 xScale = 256;
+#endif
 
     Vector2 drawPos;
     switch (self->lineCount) {
@@ -266,8 +270,13 @@ void UIDialog_DrawBGShapes(void)
                   ((ScreenInfo->position.y + ScreenInfo->center.y) << 16) - (self->bgRectSize.y >> 1), self->bgRectSize.x, self->bgRectSize.y,
                   self->useAltColor ? 0x282028 : 0x000000, 0xFF, INK_NONE, false);
 
+#ifdef _arch_dreamcast
     int32 paraWidth = 0xC8 * ScreenInfo->size.x / 424;
     int32 paraEdge  = 0x8F * ScreenInfo->size.x / 424;
+#else
+    int32 paraWidth = 0xC8;
+    int32 paraEdge  = 0x8F;
+#endif
     UIWidgets_DrawParallelogram(self->dialogPos.x + ((ScreenInfo->position.x + ScreenInfo->center.x) << 16),
                                 self->dialogPos.y + ((ScreenInfo->position.y + ScreenInfo->center.y) << 16), paraWidth, 0x8F, paraEdge, 0x30, 0xA0, 0xF0);
 }
