@@ -79,8 +79,14 @@ void TMZ2Setup_StageLoad(void)
     }
 }
 
+#if _arch_dreamcast
+// avoid those "tried to use palette bank id > 3" issues that cause slowdown
+void TMZ2Setup_DrawHook_ApplyDynTilesPalette(void) { /* RSDK.SetActivePalette(4, 0, ScreenInfo->size.y); */ }
+void TMZ2Setup_DrawHook_RemoveDynTilesPalette(void) { /* RSDK.SetActivePalette(0, 0, ScreenInfo->size.y); */ }
+#else
 void TMZ2Setup_DrawHook_ApplyDynTilesPalette(void) { RSDK.SetActivePalette(4, 0, ScreenInfo->size.y); }
 void TMZ2Setup_DrawHook_RemoveDynTilesPalette(void) { RSDK.SetActivePalette(0, 0, ScreenInfo->size.y); }
+#endif
 
 void TMZ2Setup_DrawDynTiles_Eggman(void)
 {
