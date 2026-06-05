@@ -1278,13 +1278,8 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks)
 #endif
 
 #if _arch_dreamcast
-#if MANIA_USE_PLUS
-        if (!ERZStart && globals->superMusicEnabled)
-            Music_PlayJingle(TRACK_SUPER);
-#else
         if (!ERZStart)
             Music_PlayJingle(TRACK_SUPER);
-#endif
 #else
 #if MANIA_USE_PLUS
         if (!ERZStart && globals->superMusicEnabled)
