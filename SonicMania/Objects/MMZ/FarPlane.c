@@ -98,12 +98,21 @@ void FarPlane_StageLoad(void)
 
         RSDK.CopyPalette(0, 0, 3, 0, 128);
         RSDK.CopyPalette(0, 144, 3, 144, 112);
+#if _arch_dreamcast
+        // DC only has 4 palette banks (0-3), so do the fade directly into bank 3
+        // instead of using bank 4
+#if MANIA_USE_PLUS
+        if (SceneInfo->filter & FILTER_MANIA)
+#endif
+            RSDK.SetLimitedFade(3, 0, 3, 96, 128, 143);
+#else
         RSDK.CopyPalette(3, 0, 4, 0, 255);
 
 #if MANIA_USE_PLUS
         if (SceneInfo->filter & FILTER_MANIA)
 #endif
             RSDK.SetLimitedFade(4, 0, 3, 96, 128, 143);
+#endif
 
         RSDK.CopyTileLayer(FarPlane->layerID, 0, 192, Zone->fgLayer[0], 0, 192, 1024, 208);
 
@@ -298,13 +307,11 @@ void FarPlane_Scanline_FarPlaneView(ScanlineInfo *scanline)
         scanline++;
     }
 
-    RSDK.CopyPalette(0, 0, 4, 0, 128);
 #if _arch_dreamcast
-    // avoid the "pal bank idx > 3" issue and header thrashing that causes slowdown
-    // this makes the far plane ugly colors but at least it stands out
-    // revisit with a better solution eventually
+    RSDK.CopyPalette(0, 0, 3, 0, 128);
     RSDK.SetActivePalette(3, 0, ScreenInfo->size.y);
 #else
+    RSDK.CopyPalette(0, 0, 4, 0, 128);
     RSDK.SetActivePalette(4, 0, ScreenInfo->size.y);
 #endif
 }
