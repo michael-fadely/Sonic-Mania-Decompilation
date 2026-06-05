@@ -299,7 +299,14 @@ void FarPlane_Scanline_FarPlaneView(ScanlineInfo *scanline)
     }
 
     RSDK.CopyPalette(0, 0, 4, 0, 128);
+#if _arch_dreamcast
+    // avoid the "pal bank idx > 3" issue and header thrashing that causes slowdown
+    // this makes the far plane ugly colors but at least it stands out
+    // revisit with a better solution eventually
     RSDK.SetActivePalette(3, 0, ScreenInfo->size.y);
+#else
+    RSDK.SetActivePalette(4, 0, ScreenInfo->size.y);
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR
