@@ -147,7 +147,6 @@ void TitleBG_Scanline_Island(ScanlineInfo *scanlines)
     scanlines->deform.y = SCANLINE_MINOR_MAGIC_ISLAND;
     scanlines->position.x = sine;
     scanlines->position.y = cosine;
-    scanlines++;
 #else
     ScanlineInfo *scanlinePtr = &scanlines[168];
     for (int32 i = 16; i < 88; ++i) {
