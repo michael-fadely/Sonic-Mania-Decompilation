@@ -87,6 +87,15 @@ void ShopWindow_Create(void *data)
             RSDK.SetSpriteAnimation(ShopWindow->aniFrames, 0, &self->animator, false, 0);
         }
 
+#ifdef _arch_dreamcast
+        // DC_SILHOUETTE: store regions in world-pixel coords (converted to screen-space at draw time)
+        if (self->silhouette) {
+            int32 x = FROM_FIXED(self->position.x) - self->size.x;
+            int32 y = FROM_FIXED(self->position.y) - self->size.y;
+            RSDK.SetSilhouetteRegion(x, y, x + 2 * self->size.x, y + 2 * self->size.y, self->drawGroup);
+        }
+#endif
+
         foreach_all(CircleBumper, bumper)
         {
             if (RSDK.CheckObjectCollisionTouchBox(bumper, &CircleBumper->hitboxBumper, self, &self->hitboxItem))
