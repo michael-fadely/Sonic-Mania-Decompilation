@@ -128,6 +128,9 @@ void MenuSetup_SaveFileCB(bool32 success);
 #else
 void MenuSetup_SaveFileCB(void);
 #endif
+#ifdef _arch_dreamcast
+bool32 MenuSetup_SaveSel_BackPressCB(void);
+#endif
 void MenuSetup_SaveSlot_ActionCB(void);
 void MenuSetup_SaveSel_MenuUpdateCB(void);
 void MenuSetup_OpenSecretsMenu(void);
