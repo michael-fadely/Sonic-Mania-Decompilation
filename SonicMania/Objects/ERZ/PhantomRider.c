@@ -27,10 +27,17 @@ void PhantomRider_Draw(void)
 {
     RSDK_THIS(PhantomRider);
 
+#if _arch_dreamcast
+    RSDK.SetActivePalette(2, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+
+    if (self->invincibilityTimer & 1)
+        RSDK.CopyPalette(6, 128, 2, 128, 128);
+#else
     RSDK.SetActivePalette(4, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
 
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(6, 128, 4, 128, 128);
+#endif
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -39,8 +46,13 @@ void PhantomRider_Draw(void)
         RSDK.DrawSprite(&self->mainAnimator, NULL, false);
     }
 
+#if _arch_dreamcast
+    if (self->invincibilityTimer & 1)
+        RSDK.CopyPalette(4, 128, 2, 128, 128);
+#else
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(5, 128, 4, 128, 128);
+#endif
 
     RSDK.SetActivePalette(0, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
 }

@@ -25,6 +25,15 @@ void CutsceneHBH_Update(void)
 
     RSDK.ProcessAnimation(&self->mainAnimator);
     RSDK.ProcessAnimation(&self->fxAnimator);
+
+#if _arch_dreamcast
+    // DC: set up bank 3 with King's palette before draw pass
+    if (self->useCustomPalettes && self->colorSet == 3) {
+        RSDK.CopyPalette(0, 0, 3, 0, 128);
+        for (int32 c = 0; c < 0x80; ++c)
+            RSDK.SetPaletteEntry(3, c + 0x80, self->colors[c]);
+    }
+#endif
 }
 
 void CutsceneHBH_LateUpdate(void) {}
@@ -35,6 +44,17 @@ void CutsceneHBH_Draw(void)
 {
     RSDK_THIS(CutsceneHBH);
 
+#if _arch_dreamcast
+    // DC: all HBH characters share bank 3 with King's palette (set up in Update)
+    if (self->useCustomPalettes)
+        RSDK.SetActivePalette(3, 0, ScreenInfo->size.y);
+
+    RSDK.DrawSprite(&self->fxAnimator, NULL, false);
+    RSDK.DrawSprite(&self->mainAnimator, NULL, false);
+
+    if (self->useCustomPalettes)
+        RSDK.SetActivePalette(0, 0, ScreenInfo->size.y);
+#else
     if (self->useCustomPalettes)
         CutsceneHBH_SetupPalettes();
 
@@ -43,6 +63,7 @@ void CutsceneHBH_Draw(void)
 
     if (self->useCustomPalettes)
         CutsceneHBH_RestorePalette();
+#endif
 }
 
 void CutsceneHBH_Create(void *data)
