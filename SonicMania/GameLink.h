@@ -1636,6 +1636,7 @@ typedef struct {
     void (*FreeSpriteAnimation)(uint16 aniFrames);
     void (*SetSilhouetteRegion)(int32 x1, int32 y1, int32 x2, int32 y2, int32 drawGroup); // DC_SILHOUETTE
     void (*ClearSilhouetteRegions)(void); // DC_SILHOUETTE
+    void (*SetPaletteDesaturation)(uint8 amount); // DC_DESATURATE
 #endif
     uint16 (*CreateSpriteAnimation)(const char *filePath, uint32 frameCount, uint32 listCount, uint8 scope);
     void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int32 frameID);
