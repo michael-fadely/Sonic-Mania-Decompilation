@@ -9,6 +9,10 @@
 
 ObjectCutsceneHBH *CutsceneHBH;
 
+#if _arch_dreamcast
+static bool32 hbhPaletteReady = false;
+#endif
+
 void CutsceneHBH_Update(void)
 {
     RSDK_THIS(CutsceneHBH);
@@ -27,18 +31,26 @@ void CutsceneHBH_Update(void)
     RSDK.ProcessAnimation(&self->fxAnimator);
 
 #if _arch_dreamcast
-    // DC: set up bank 3 with King's palette before draw pass
-    if (self->useCustomPalettes && self->colorSet == 3) {
-        RSDK.CopyPalette(0, 0, 3, 0, 128);
-        for (int32 c = 0; c < 0x80; ++c)
-            RSDK.SetPaletteEntry(3, c + 0x80, self->colors[c]);
+    // DC: any HBH populates bank 3, King (colorSet 3) always wins by overwriting
+    if (self->useCustomPalettes) {
+        if (self->colorSet == 3 || !hbhPaletteReady) {
+            RSDK.CopyPalette(0, 0, 3, 0, 128);
+            for (int32 c = 0; c < 0x80; ++c)
+                RSDK.SetPaletteEntry(3, c + 0x80, self->colors[c]);
+            hbhPaletteReady = true;
+        }
     }
 #endif
 }
 
 void CutsceneHBH_LateUpdate(void) {}
 
-void CutsceneHBH_StaticUpdate(void) {}
+void CutsceneHBH_StaticUpdate(void)
+{
+#if _arch_dreamcast
+    hbhPaletteReady = false;
+#endif
+}
 
 void CutsceneHBH_Draw(void)
 {
