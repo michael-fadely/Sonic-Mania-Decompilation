@@ -40,8 +40,9 @@ void BSS_Setup_Update(void)
 
 #if _arch_dreamcast
     // 1ms sleep gives the PVR time to finish the previous frame's render
-    // before palette RAM is modified — without this, rare one-frame
-    // checkerboard inversions occur when palettePage toggles
+    // before palette RAM is modified
+    // without this, occasional single frame checkerboard inversions occur
+    // when palettePage toggles and the screen flickers
     thd_sleep(1);
 
     // debounce on the palettePage value
