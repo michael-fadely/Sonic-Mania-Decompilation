@@ -87,15 +87,6 @@ void ShopWindow_Create(void *data)
             RSDK.SetSpriteAnimation(ShopWindow->aniFrames, 0, &self->animator, false, 0);
         }
 
-#ifdef _arch_dreamcast
-        // DC_SILHOUETTE: store regions in world-pixel coords (converted to screen-space at draw time)
-        if (self->silhouette) {
-            int32 x = FROM_FIXED(self->position.x) - self->size.x;
-            int32 y = FROM_FIXED(self->position.y) - self->size.y;
-            RSDK.SetSilhouetteRegion(x, y, x + 2 * self->size.x, y + 2 * self->size.y, self->drawGroup);
-        }
-#endif
-
         foreach_all(CircleBumper, bumper)
         {
             if (RSDK.CheckObjectCollisionTouchBox(bumper, &CircleBumper->hitboxBumper, self, &self->hitboxItem))
@@ -111,6 +102,21 @@ void ShopWindow_StageLoad(void)
     RSDK.SetPaletteMask(RSDK.GetPaletteEntry(0, 253));
 
     ShopWindow->sfxShatter = RSDK.GetSfx("Stage/WindowShatter.wav");
+
+#if _arch_dreamcast
+    // DC_SILHOUETTE: register all silhouette regions up front so off-screen windows are included
+    RSDK.ClearSilhouetteRegions();
+    foreach_all(ShopWindow, window)
+    {
+        if (window->silhouette) {
+            int32 halfW = FROM_FIXED(window->size.x);
+            int32 halfH = FROM_FIXED(window->size.y);
+            int32 sx    = FROM_FIXED(window->position.x) - halfW;
+            int32 sy    = FROM_FIXED(window->position.y) - halfH;
+            RSDK.SetSilhouetteRegion(sx, sy, sx + 2 * halfW, sy + 2 * halfH, Zone->objectDrawGroup[1]);
+        }
+    }
+#endif
 }
 
 void ShopWindow_State_Shard(void)
