@@ -202,21 +202,43 @@ void MainMenu_MenuButton_ActionCB(void)
                 EntityUIControl *control = TimeAttackMenu->timeAttackControl;
                 control->buttonID        = 0;
                 control->menuWasSetup    = false;
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UITAZoneModule->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+                control->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Time Attack");
             }
             else {
                 EntityUIControl *control = TimeAttackMenu->timeAttackControl_Legacy;
                 control->buttonID        = 0;
                 control->menuWasSetup    = false;
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UITAZoneModule->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+                control->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Time Attack Legacy");
             }
             break;
 
         case 2: // Competition
-            if (API.CheckDLC(DLC_PLUS))
+#ifdef _arch_dreamcast
+            RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+            UIVsZoneButton->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+#endif
+            if (API.CheckDLC(DLC_PLUS)) {
+#ifdef _arch_dreamcast
+                CompetitionMenu->competitionControl->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Competition");
-            else
+            }
+            else {
+#ifdef _arch_dreamcast
+                CompetitionMenu->competitionControl_Legacy->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Competition Legacy");
+            }
             break;
 
         case 3: // Options
@@ -300,8 +322,15 @@ void MainMenu_HandleUnlocks(void)
 #ifdef _arch_dreamcast
 bool32 MainMenu_SaveSel_BackPressCB(void)
 {
-    RSDK.FreeSpriteAnimation(UISaveSlot->aniFrames);
-    UISaveSlot->aniFrames = (uint16)-1;
+    uint16 saveSelAnim = UISaveSlot->aniFrames;
+    if (saveSelAnim == (uint16)-1)
+        saveSelAnim = UITAZoneModule->aniFrames;
+    if (saveSelAnim == (uint16)-1)
+        saveSelAnim = UIVsZoneButton->aniFrames;
+    RSDK.FreeSpriteAnimation(saveSelAnim);
+    UISaveSlot->aniFrames     = (uint16)-1;
+    UITAZoneModule->aniFrames = (uint16)-1;
+    UIVsZoneButton->aniFrames = (uint16)-1;
     UIDiorama->aniFrames  = RSDK.LoadSpriteAnimation("UI/Diorama.bin", SCOPE_STAGE);
 
     foreach_all(UIDiorama, diorama)
