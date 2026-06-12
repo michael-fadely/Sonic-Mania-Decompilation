@@ -87,10 +87,7 @@ void Smog_Draw(void)
 #if _arch_dreamcast
     // INK_BLEND doesn't produce great results on DC
     // this looks ok
-    if (self->alpha >= 0x60)
-        RSDK.DrawDeformedSprite(Smog->aniFrames, INK_ALPHA, 0x60);
-    else
-        RSDK.DrawDeformedSprite(Smog->aniFrames, INK_ALPHA, self->alpha);
+    RSDK.DrawDeformedSprite(Smog->aniFrames, INK_ALPHA, MIN(0x60, self->alpha));
 #else
     if (self->alpha >= 0x80)
         RSDK.DrawDeformedSprite(Smog->aniFrames, INK_BLEND, 0xE0);

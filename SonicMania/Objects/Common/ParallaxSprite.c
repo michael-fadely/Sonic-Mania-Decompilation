@@ -74,6 +74,7 @@ void ParallaxSprite_Draw(void)
 #endif
     RSDK.DrawSprite(&self->animator, &drawPos, true);
 }
+
 void ParallaxSprite_Create(void *data)
 {
     RSDK_THIS(ParallaxSprite);
