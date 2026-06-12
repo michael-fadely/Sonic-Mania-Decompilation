@@ -15,6 +15,20 @@ void GigaMetal_Update(void)
     RSDK_THIS(GigaMetal);
 
     StateMachine_Run(self->state);
+
+#if _arch_dreamcast
+    if (GigaMetal->explodeTimer <= 0) {
+        if (GigaMetal->invincibleTimer & 1) {
+            RSDK.CopyPalette(2, 32, 0, 32, 16);
+            RSDK.CopyPalette(2, 160, 0, 160, 10);
+            RSDK.CopyPalette(2, 240, 0, 240, 7);
+        } else {
+            RSDK.CopyPalette(1, 32, 0, 32, 16);
+            RSDK.CopyPalette(1, 160, 0, 160, 10);
+            RSDK.CopyPalette(1, 240, 0, 240, 7);
+        }
+    }
+#endif
 }
 
 void GigaMetal_LateUpdate(void) {}
@@ -27,9 +41,11 @@ void GigaMetal_Draw(void)
 
     if (GigaMetal->explodeTimer <= 0) {
         if (GigaMetal->invincibleTimer & 1) {
+#if !_arch_dreamcast
             RSDK.CopyPalette(2, 32, 0, 32, 16);
             RSDK.CopyPalette(2, 160, 0, 160, 10);
             RSDK.CopyPalette(2, 240, 0, 240, 7);
+#endif
 
             if (self->stateDraw) {
                 StateMachine_Run(self->stateDraw);
@@ -38,9 +54,11 @@ void GigaMetal_Draw(void)
                 RSDK.DrawSprite(&self->mainAnimator, NULL, false);
             }
 
+#if !_arch_dreamcast
             RSDK.CopyPalette(1, 32, 0, 32, 16);
             RSDK.CopyPalette(1, 160, 0, 160, 10);
             RSDK.CopyPalette(1, 240, 0, 240, 7);
+#endif
         }
         else {
             if (self->stateDraw) {
@@ -52,7 +70,14 @@ void GigaMetal_Draw(void)
         }
     }
     else {
+#ifdef _arch_dreamcast
+        int32 storeInk   = self->inkEffect;
+        int32 storeAlpha = self->alpha;
+        self->inkEffect  = INK_FLASH_GIGA;
+        self->alpha      = GigaMetal->explodeTimer;
+#else
         RSDK.SetLimitedFade(0, 4, 5, GigaMetal->explodeTimer, 0, 256);
+#endif
 
         if (self->stateDraw) {
             StateMachine_Run(self->stateDraw);
@@ -61,7 +86,12 @@ void GigaMetal_Draw(void)
             RSDK.DrawSprite(&self->mainAnimator, NULL, false);
         }
 
+#ifdef _arch_dreamcast
+        self->inkEffect = storeInk;
+        self->alpha     = storeAlpha;
+#else
         RSDK.CopyPalette(4, 1, 0, 1, 255);
+#endif
     }
 }
 

@@ -81,12 +81,22 @@ void Shiversaw_Draw(void)
     self->direction = FLIP_NONE;
     RSDK.DrawSprite(&self->tanksAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (Shiversaw->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (Shiversaw->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     RSDK.DrawSprite(&self->bellowsAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
     if (self->circleRadius > 0)
         RSDK.DrawCircle(self->position.x, self->position.y, self->circleRadius, 0xFFFFFF, (self->timer << 8) / 120, INK_ALPHA, false);
 }

@@ -20,12 +20,16 @@ void EggJanken_Update(void)
 
     if (self->invincibilityTimer) {
         self->invincibilityTimer--;
+#ifdef _arch_dreamcast
+        self->inkEffect = (self->invincibilityTimer & 2) ? INK_FLASH : INK_NONE;
+#else
         if (!(self->invincibilityTimer & 1)) {
             if (self->invincibilityTimer & 2)
                 RSDK.SetPaletteEntry(0, 128, 0xFFFFFF);
             else
                 RSDK.SetPaletteEntry(0, 128, 0x000000);
         }
+#endif
     }
 
 #if RETRO_USE_MOD_LOADER

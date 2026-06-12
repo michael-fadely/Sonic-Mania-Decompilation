@@ -684,6 +684,10 @@ typedef enum {
     INK_TINT,
     INK_MASKED,
     INK_UNMASKED,
+#if _arch_dreamcast
+    INK_FLASH,
+    INK_FLASH_GIGA,
+#endif
 } InkEffects;
 
 typedef enum { FX_NONE = 0, FX_FLIP = 1, FX_ROTATE = 2, FX_SCALE = 4 } DrawFX;

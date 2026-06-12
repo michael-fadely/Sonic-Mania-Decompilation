@@ -326,6 +326,22 @@ void KleptoMobile_Draw_KleptoMobile(void)
 {
     RSDK_THIS(KleptoMobile);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->mobileTopAnimator, NULL, false);
+    RSDK.DrawSprite(&self->eggmanAnimator, NULL, false);
+
+    self->mobileAnimator.frameID = 2;
+    RSDK.DrawSprite(&self->mobileAnimator, NULL, false);
+
+    self->mobileAnimator.frameID = 0;
+    RSDK.DrawSprite(&self->mobileAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 112, 0, 136, 8);
         RSDK.CopyPalette(2, 120, 0, 11, 1);
@@ -357,6 +373,7 @@ void KleptoMobile_Draw_KleptoMobile(void)
         self->mobileAnimator.frameID = 0;
         RSDK.DrawSprite(&self->mobileAnimator, NULL, false);
     }
+#endif
 
     RSDK.DrawCircle(self->rubyPos.x, self->rubyPos.y, self->circleRadius, 0x000000, 0xFF, INK_TINT, false);
 }

@@ -341,6 +341,18 @@ void HotaruHiWatt_Draw_Boss(void)
     if (RSDK.GetFrameID(&self->headAnimator) == 'b')
         self->direction = FLIP_X;
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->headAnimator, NULL, false);
+
+    self->direction = FLIP_NONE;
+    RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 240, 0, 240, 16);
 
@@ -357,6 +369,7 @@ void HotaruHiWatt_Draw_Boss(void)
         self->direction = FLIP_NONE;
         RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
     }
+#endif
 }
 
 void HotaruHiWatt_Draw_BossLaserCharging(void)
@@ -366,6 +379,18 @@ void HotaruHiWatt_Draw_BossLaserCharging(void)
     if (RSDK.GetFrameID(&self->headAnimator) == 'b')
         self->direction = FLIP_X;
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->headAnimator, NULL, false);
+
+    self->direction = FLIP_NONE;
+    RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 240, 0, 240, 16);
         RSDK.DrawSprite(&self->headAnimator, NULL, false);
@@ -381,6 +406,7 @@ void HotaruHiWatt_Draw_BossLaserCharging(void)
         self->direction = FLIP_NONE;
         RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
     }
+#endif
 
     self->inkEffect = INK_ADD;
     RSDK.DrawSprite(&self->mainAnimator, NULL, false);
@@ -399,6 +425,18 @@ void HotaruHiWatt_Draw_BossLaser(void)
     if (RSDK.GetFrameID(&self->headAnimator) == 'b')
         self->direction = FLIP_X;
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->headAnimator, NULL, false);
+
+    self->direction = FLIP_NONE;
+    RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 240, 0, 240, 16);
         RSDK.DrawSprite(&self->headAnimator, NULL, false);
@@ -414,6 +452,7 @@ void HotaruHiWatt_Draw_BossLaser(void)
         self->direction = FLIP_NONE;
         RSDK.DrawSprite(&self->bulbAnimator, NULL, false);
     }
+#endif
 
     self->inkEffect                 = INK_ALPHA;
     self->bulbFlashAnimator.frameID = 0;

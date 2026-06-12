@@ -30,8 +30,14 @@ void UberCaterkiller_Draw(void)
     int32 clipY2 = ScreenInfo->clipBound_Y2;
 
     if (self->aniID) {
+#ifdef _arch_dreamcast
+        int32 storeInk = self->inkEffect;
+        if (self->invincibilityTimer & 1)
+            self->inkEffect = INK_FLASH;
+#else
         if (self->invincibilityTimer & 1)
             RSDK.SetPaletteEntry(0, 160, 0xE0E0E0);
+#endif
 
         // Draw Head
         if (self->bodyScales[0] < 0x200 == (SceneInfo->currentDrawGroup == self->drawGroup)) {
@@ -41,7 +47,11 @@ void UberCaterkiller_Draw(void)
             RSDK.DrawSprite(self->bodyAnimators[0], self->bodyPositions, false);
         }
 
+#ifdef _arch_dreamcast
+        self->inkEffect = storeInk;
+#else
         RSDK.SetPaletteEntry(0, 160, 0x200000);
+#endif
 
         // Draw Body Segments
         self->direction ^= FLIP_X;
@@ -78,8 +88,14 @@ void UberCaterkiller_Draw(void)
         self->direction ^= FLIP_X;
         self->rotation = 0;
 
+#ifdef _arch_dreamcast
+        int32 storeInk = self->inkEffect;
+        if (self->invincibilityTimer & 1)
+            self->inkEffect = INK_FLASH;
+#else
         if (self->invincibilityTimer & 1)
             RSDK.SetPaletteEntry(0, 160, 0xE0E0E0);
+#endif
 
         // Draw Head
         if (self->bodyScales[0] < 0x200 == (SceneInfo->currentDrawGroup == self->drawGroup)) {
@@ -89,7 +105,11 @@ void UberCaterkiller_Draw(void)
             RSDK.DrawSprite(self->bodyAnimators[0], &self->bodyPositions[0], false);
         }
 
+#ifdef _arch_dreamcast
+        self->inkEffect = storeInk;
+#else
         RSDK.SetPaletteEntry(0, 160, 0x200000);
+#endif
     }
 
     ScreenInfo->clipBound_Y2 = clipY2;
