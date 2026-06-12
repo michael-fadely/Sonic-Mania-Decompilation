@@ -92,6 +92,7 @@ void PhantomEgg_StageLoad(void)
     RSDK.CopyPalette(1, 128, 0, 128, 128);
 #if _arch_dreamcast
     RSDK.CopyPalette(0, 0, 2, 0, 128);
+    RSDK.CopyPalette(0, 128, 4, 128, 128);
 #else
     RSDK.CopyPalette(0, 0, 4, 0, 128);
 #endif
