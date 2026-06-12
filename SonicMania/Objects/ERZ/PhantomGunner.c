@@ -24,7 +24,11 @@ void PhantomGunner_Draw(void)
 {
     RSDK_THIS(PhantomGunner);
 
+#if _arch_dreamcast
+    RSDK.SetActivePalette(2, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#else
     RSDK.SetActivePalette(4, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#endif
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -254,7 +258,11 @@ void PhantomGunner_Draw_Gunner(void)
     RSDK_THIS(PhantomGunner);
 
     if (self->invincibilityTimer & 1) {
+#if _arch_dreamcast
+        RSDK.CopyPalette(6, 128, 2, 128, 128);
+#else
         RSDK.CopyPalette(6, 128, 4, 128, 128);
+#endif
 
         RSDK.DrawSprite(&self->mainAnimator, NULL, false);
 
@@ -264,7 +272,11 @@ void PhantomGunner_Draw_Gunner(void)
         self->direction = FLIP_NONE;
         RSDK.DrawSprite(&self->fxAnimator, NULL, false);
 
+#if _arch_dreamcast
+        RSDK.CopyPalette(4, 128, 2, 128, 128);
+#else
         RSDK.CopyPalette(5, 128, 4, 128, 128);
+#endif
     }
     else {
         RSDK.DrawSprite(&self->mainAnimator, NULL, false);
