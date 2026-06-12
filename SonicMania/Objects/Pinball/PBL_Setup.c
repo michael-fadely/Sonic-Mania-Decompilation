@@ -221,6 +221,12 @@ void PBL_Setup_Scanline_PinballBG(ScanlineInfo *scanlines)
 {
     RSDK.SetClipBounds(0, 0, 0, ScreenInfo->size.x, 112);
 
+#if _arch_dreamcast
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_PBL_BG;
+    scanlines->position.x = PBL_Setup->scanlineTimer >> 1;
+    scanlines->position.y = 0;
+#else
     int32 x       = 116 << 16;
     int32 centerX = ScreenInfo->center.x;
     int32 sin     = RSDK.Sin256(32);
@@ -242,6 +248,7 @@ void PBL_Setup_Scanline_PinballBG(ScanlineInfo *scanlines)
         scanlines++;
         ++clr;
     }
+#endif
 }
 
 void PBL_Setup_DrawHook_PrepareDrawingFX(void)
