@@ -30,6 +30,17 @@ void HeavyKing_Draw(void)
 {
     RSDK_THIS(HeavyKing);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->bodyAnimator, NULL, false);
+    RSDK.DrawSprite(&self->scepterAnimator, NULL, false);
+    RSDK.DrawSprite(&self->electricityAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 16, 0, 16, 16);
         RSDK.CopyPalette(2, 192, 0, 192, 16);
@@ -46,6 +57,7 @@ void HeavyKing_Draw(void)
         RSDK.DrawSprite(&self->scepterAnimator, NULL, false);
         RSDK.DrawSprite(&self->electricityAnimator, NULL, false);
     }
+#endif
 }
 
 void HeavyKing_Create(void *data)

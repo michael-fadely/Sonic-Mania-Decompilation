@@ -1035,12 +1035,22 @@ void HeavyRider_Draw_Boss(void)
         }
     }
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (HeavyRider->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (HeavyRider->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     RSDK.DrawSprite(&self->mainAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
 
     RSDK.DrawSprite(&self->thrustAnimator, NULL, false);
 

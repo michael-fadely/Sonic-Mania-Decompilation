@@ -47,12 +47,22 @@ void HeavyMystic_Draw(void)
         StateMachine_Run(self->stateDraw);
     }
     else {
+#ifdef _arch_dreamcast
+        int32 storeInk = self->inkEffect;
+        if (self->invincibilityTimer & 1)
+            self->inkEffect = INK_FLASH;
+#else
         if (self->invincibilityTimer & 1)
             RSDK.SetPaletteEntry(0, 158, 0xE0E0E0);
+#endif
 
         RSDK.DrawSprite(&self->animator, NULL, false);
 
+#ifdef _arch_dreamcast
+        self->inkEffect = storeInk;
+#else
         RSDK.SetPaletteEntry(0, 158, 0x000000);
+#endif
     }
 }
 

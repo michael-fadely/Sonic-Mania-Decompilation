@@ -29,8 +29,14 @@ void ERZShinobi_Draw(void)
 {
     RSDK_THIS(ERZShinobi);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if ((self->invincibilityTimer & 1))
         RSDK.CopyPalette(2, 128, 0, 128, 128);
+#endif
 
     self->rotation = self->rotStore;
 
@@ -51,8 +57,12 @@ void ERZShinobi_Draw(void)
 
     RSDK.DrawSprite(&self->bodyAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     if ((self->invincibilityTimer & 1))
         RSDK.CopyPalette(1, 128, 0, 128, 128);
+#endif
 }
 
 void ERZShinobi_Create(void *data)

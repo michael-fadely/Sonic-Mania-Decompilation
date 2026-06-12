@@ -676,12 +676,22 @@ void CrimsonEye_Draw_Container(void)
 {
     RSDK_THIS(CrimsonEye);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (!self->animator.frameID && (CrimsonEye->invincibilityTimer & 1))
+        self->inkEffect = INK_FLASH;
+#else
     if (!self->animator.frameID && (CrimsonEye->invincibilityTimer & 1))
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     RSDK.DrawSprite(&self->animator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
 }
 
 void CrimsonEye_StateEye_EnterBalls(void)
@@ -1033,8 +1043,13 @@ void CrimsonEye_Draw_Core(void)
 {
     RSDK_THIS(CrimsonEye);
 
+#ifdef _arch_dreamcast
+    if (CrimsonEye->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (CrimsonEye->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     if (self->state != CrimsonEye_StateCore_ContainerActive && self->state != CrimsonEye_StateCore_BreakOut) {
         self->animator.frameID = 12;
@@ -1072,7 +1087,9 @@ void CrimsonEye_Draw_Core(void)
     RSDK.DrawSprite(&self->animator, &CrimsonEye->eyePositions[2], false);
 
     self->inkEffect = INK_NONE;
+#ifndef _arch_dreamcast
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
 }
 
 void CrimsonEye_CheckPlayerCollisions_Ball(void)

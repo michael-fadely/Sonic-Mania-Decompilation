@@ -39,12 +39,19 @@ void DDWrecker_Draw(void)
             RSDK.SetLimitedFade(1, 2, 3, self->blendAmount, 1, 28);
         }
         else {
+#ifdef _arch_dreamcast
+            self->inkEffect = INK_FLASH;
+#else
             for (int32 i = 1; i < 0x1C; ++i) {
                 RSDK.SetPaletteEntry(1, i, 0xF0F0F0);
             }
+#endif
         }
     }
     RSDK.DrawSprite(&self->animator, NULL, false);
+#ifdef _arch_dreamcast
+    self->inkEffect = INK_NONE;
+#endif
 
     RSDK.SetActivePalette(0, 0, ScreenInfo->size.y);
 }

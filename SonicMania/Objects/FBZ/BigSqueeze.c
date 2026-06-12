@@ -288,18 +288,28 @@ void BigSqueeze_Draw_Boss(void)
     RSDK_THIS(BigSqueeze);
     Vector2 drawPos;
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.SetPaletteEntry(0, 156, 0xE0E0E0);
         RSDK.SetPaletteEntry(0, 33, 0xE0E0E0);
     }
+#endif
 
     RSDK.DrawSprite(&self->animator, NULL, false);
     RSDK.DrawSprite(&self->domeAnimator, NULL, false);
     RSDK.DrawSprite(&self->prongsAnimator, NULL, false);
     RSDK.DrawSprite(&self->electricAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 156, 0x202020);
     RSDK.SetPaletteEntry(0, 33, 0x303840);
+#endif
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;
 

@@ -247,6 +247,21 @@ void ERZGunner_Draw_Gunner(void)
 {
     RSDK_THIS(ERZGunner);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->mainAnimator, NULL, false);
+
+    self->direction = FLIP_X;
+    RSDK.DrawSprite(&self->fxAnimator, NULL, false);
+
+    self->direction = FLIP_NONE;
+    RSDK.DrawSprite(&self->fxAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 128, 0, 128, 128);
 
@@ -269,6 +284,7 @@ void ERZGunner_Draw_Gunner(void)
         self->direction = FLIP_NONE;
         RSDK.DrawSprite(&self->fxAnimator, NULL, false);
     }
+#endif
 }
 
 void ERZGunner_Draw_RocketLaunch(void)

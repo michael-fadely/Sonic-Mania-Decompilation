@@ -701,12 +701,20 @@ void HeavyShinobi_Draw_Shinobi(void)
     }
 
     self->inkEffect = INK_NONE;
+#ifdef _arch_dreamcast
+    if (HeavyShinobi->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (HeavyShinobi->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     RSDK.DrawSprite(&self->mainAnimator, NULL, false);
 
+#ifndef _arch_dreamcast
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
+    self->inkEffect = INK_NONE;
 }
 
 void HeavyShinobi_StateSlash_Active(void)

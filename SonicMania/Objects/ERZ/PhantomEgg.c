@@ -449,9 +449,13 @@ void PhantomEgg_Draw_Normal(void)
     RSDK_THIS(PhantomEgg);
 
     if (self->invincibilityTimer & 1) {
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_FLASH;
+#else
         RSDK.CopyPalette(3, 32, 0, 32, 10);
         RSDK.CopyPalette(3, 128, 0, 128, 16);
         RSDK.SetPaletteEntry(0, 128, 0xF0F0F0);
+#endif
 
         self->direction            = FLIP_NONE;
         self->coreAnimator.frameID = 1;
@@ -468,9 +472,13 @@ void PhantomEgg_Draw_Normal(void)
         RSDK.DrawSprite(&self->armLAnimator, NULL, false);
         RSDK.DrawSprite(&self->legAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_NONE;
+#else
         RSDK.CopyPalette(1, 32, 0, 32, 10);
         RSDK.CopyPalette(1, 128, 0, 128, 16);
         RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
     }
     else {
         self->direction            = FLIP_NONE;

@@ -192,6 +192,13 @@ void ERZKing_Draw_Body(void)
 {
     RSDK_THIS(ERZKing);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->typeChangeTimer <= 0) {
+        if (self->invincibilityTimer & 1)
+            self->inkEffect = INK_FLASH;
+    }
+#else
     if (self->typeChangeTimer <= 0) {
         if (self->invincibilityTimer & 1)
             RSDK.CopyPalette(2, 128, 0, 128, 128);
@@ -200,6 +207,7 @@ void ERZKing_Draw_Body(void)
         RSDK.SetLimitedFade(0, 1, 4, self->typeChangeTimer, 0, 48);
         RSDK.SetLimitedFade(0, 1, 4, self->typeChangeTimer, 128, 256);
     }
+#endif
 
     RSDK.DrawSprite(&self->headAnimator, NULL, false);
     RSDK.DrawSprite(&self->bodyAnimator, NULL, false);
@@ -224,6 +232,9 @@ void ERZKing_Draw_Body(void)
 
     RSDK.DrawSprite(&self->rubyAnimator, &self->rubyPos, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     if (self->typeChangeTimer <= 0) {
         if (self->invincibilityTimer & 1)
             RSDK.CopyPalette(1, 128, 0, 128, 128);
@@ -232,6 +243,7 @@ void ERZKing_Draw_Body(void)
         RSDK.CopyPalette(1, 0, 0, 0, 48);
         RSDK.CopyPalette(1, 128, 0, 128, 128);
     }
+#endif
 }
 
 void ERZKing_Draw_Arm(void)

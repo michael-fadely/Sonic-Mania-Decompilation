@@ -177,6 +177,13 @@ void ERZMystic_Draw_CupSwap(void)
     RSDK_THIS(ERZMystic);
 
     Vector2 drawPos = self->position;
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+    RSDK.DrawSprite(&self->mysticAnimator, &self->mysticPos, false);
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(2, 128, 0, 128, 128);
 
@@ -187,6 +194,7 @@ void ERZMystic_Draw_CupSwap(void)
     else {
         RSDK.DrawSprite(&self->mysticAnimator, &self->mysticPos, false);
     }
+#endif
 
     for (int32 i = 0; i < 3; ++i) {
         drawPos.x       = self->position.x + self->cupPos[i];

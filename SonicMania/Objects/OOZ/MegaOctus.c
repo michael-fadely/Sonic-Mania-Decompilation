@@ -698,8 +698,14 @@ void MegaOctus_Draw_Body(void)
     RSDK_THIS(MegaOctus);
 
     int32 turnPos = abs(MegaOctus->turnPos) / 96;
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (self->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     Vector2 drawPos = self->position;
     drawPos.y -= 0x320000;
@@ -750,7 +756,11 @@ void MegaOctus_Draw_Body(void)
 
     self->animator.frameID = 6;
     RSDK.DrawSprite(&self->animator, NULL, false);
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x0000);
+#endif
 }
 
 void MegaOctus_CheckPlayerCollisions_Harpoon(void)
@@ -1196,8 +1206,14 @@ void MegaOctus_Draw_Orb(void)
     int32 angle = self->angle;
     int32 y     = self->position.y + 0xF80000;
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (self->invincibilityTimer & 1)
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
     Vector2 drawPos;
     for (int32 i = 0; i < 16; ++i) {
@@ -1213,7 +1229,11 @@ void MegaOctus_Draw_Orb(void)
     drawPos.y = (RSDK.Sin512(angle) << 8) + y;
     RSDK.DrawSprite(&self->altAnimator, &drawPos, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
 }
 
 void MegaOctus_StateArm_WrapAroundPlatform(void)

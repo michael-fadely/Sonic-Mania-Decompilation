@@ -27,10 +27,16 @@ void MeterDroid_Draw(void)
 {
     RSDK_THIS(MeterDroid);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (self->bgFadeAmount > 0)
         RSDK.SetLimitedFade(0, 1, 3, self->bgFadeAmount, 32, 47);
     else if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(2, 32, 0, 32, 16);
+#endif
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -39,8 +45,12 @@ void MeterDroid_Draw(void)
         RSDK.DrawSprite(&self->mainAnimator, NULL, false);
     }
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     if (self->bgFadeAmount > 0 || (self->invincibilityTimer & 1))
         RSDK.CopyPalette(1, 32, 0, 32, 16);
+#endif
 }
 
 void MeterDroid_Create(void *data)

@@ -35,6 +35,7 @@ void MetalSonic_StaticUpdate(void) {}
 
 void MetalSonic_Draw(void)
 {
+#if !_arch_dreamcast
     RSDK_THIS(MetalSonic);
 
     Vector2 drawPos;
@@ -61,6 +62,30 @@ void MetalSonic_Draw(void)
         RSDK.DrawSprite(&self->boosterAnimator, NULL, false);
         RSDK.DrawSprite(&self->metalSonicAnimator, NULL, false);
     }
+#else
+    RSDK_THIS(MetalSonic);
+
+    Vector2 drawPos;
+    drawPos.x = self->position.x;
+    drawPos.y = self->position.y;
+    if (self->position.x < 0x8000000)
+        drawPos.x += 0xE000000;
+    else
+        drawPos.x -= 0xE000000;
+
+    if (self->invincibilityTimer & 1) {
+        self->inkEffect = INK_FLASH;
+    }
+
+    RSDK.DrawSprite(&self->boosterAnimator, &drawPos, false);
+    RSDK.DrawSprite(&self->metalSonicAnimator, &drawPos, false);
+    RSDK.DrawSprite(&self->boosterAnimator, NULL, false);
+    RSDK.DrawSprite(&self->metalSonicAnimator, NULL, false);
+
+    if (self->invincibilityTimer & 1) {
+        self->inkEffect = INK_NONE;
+    }
+#endif
 }
 
 void MetalSonic_Create(void *data)

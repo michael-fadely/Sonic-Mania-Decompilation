@@ -395,6 +395,9 @@ void DERobot_CheckPlayerCollisions_Body(void)
     if (self->invincibilityTimer > 0) {
         self->invincibilityTimer--;
 
+#ifdef _arch_dreamcast
+        self->inkEffect = (self->invincibilityTimer & 2) ? INK_FLASH : INK_NONE;
+#else
         if ((self->invincibilityTimer & 2)) {
             RSDK.SetPaletteEntry(0, 236, 0xC0C0C0);
             RSDK.SetPaletteEntry(0, 237, 0xD0D0D0);
@@ -409,6 +412,7 @@ void DERobot_CheckPlayerCollisions_Body(void)
             RSDK.SetPaletteEntry(0, 239, 0x587090);
             RSDK.SetPaletteEntry(0, 244, 0x000000);
         }
+#endif
     }
 
     foreach_active(Player, player)

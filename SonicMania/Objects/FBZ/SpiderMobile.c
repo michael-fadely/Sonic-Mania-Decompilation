@@ -594,12 +594,18 @@ void SpiderMobile_Draw_Body(void)
         RSDK.DrawSprite(&self->headAnimator, &self->headPos, false);
     }
     else {
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_FLASH;
+        RSDK.DrawSprite(&self->headAnimator, &self->headPos, false);
+        self->inkEffect = INK_NONE;
+#else
         RSDK.SetPaletteEntry(0, 1, 0xF0F0F0);
         RSDK.CopyPalette(1, 32, 0, 32, 10);
 
         RSDK.DrawSprite(&self->headAnimator, &self->headPos, false);
         RSDK.SetPaletteEntry(0, 1, 0x000000);
         RSDK.CopyPalette(2, 32, 0, 32, 10);
+#endif
     }
     RSDK.DrawSprite(&self->eggmanAnimator, &self->headPos, false);
     RSDK.DrawSprite(&self->electricAnimator, &self->headPos, false);
