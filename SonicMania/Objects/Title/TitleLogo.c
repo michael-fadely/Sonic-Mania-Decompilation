@@ -70,6 +70,16 @@ void TitleLogo_Draw(void)
             break;
 #endif
 
+#ifdef _arch_dreamcast
+        case TITLELOGO_COPYRIGHT:
+            Vector2 copyrightPos;
+            copyrightPos.x = self->position.x - (self->position.x >> 3);
+            copyrightPos.y = self->position.y;
+            RSDK.DrawSprite(&self->mainAnimator, &copyrightPos, false);
+            break;
+#endif
+
+
         default: RSDK.DrawSprite(&self->mainAnimator, NULL, false); break;
     }
 }
