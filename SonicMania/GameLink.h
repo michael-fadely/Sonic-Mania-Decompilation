@@ -1595,6 +1595,12 @@ typedef struct {
     void (*DrawBlendedFace)(Vector2 *vertices, color *vertColors, int32 vertCount, int32 alpha, int32 inkEffect);
 #if _arch_dreamcast
     void (*Draw3DSprite)(Animator *animator, Vector4f *position, bool32 screenRelative);
+    float (*GetDepth)(void);
+    void (*SetDepth)(float depth);
+    void (*DrawCircleClipped)(int32 x, int32 y, int32 radius, uint32 color, int32 alpha, int32 inkEffect, bool32 screenRelative,
+                              int32 triTopX, int32 triTopY, int32 triBotLeftX, int32 triBotY, int32 triBotRightX);
+    void (*DrawCircleOutlineClipped)(int32 x, int32 y, int32 innerRadius, int32 outerRadius, uint32 color, int32 alpha, int32 inkEffect,
+                                    bool32 screenRelative, int32 triTopX, int32 triTopY, int32 triBotLeftX, int32 triBotY, int32 triBotRightX);
 #endif
     void (*DrawSprite)(Animator *animator, Vector2 *position, bool32 screenRelative);
     void (*DrawDeformedSprite)(uint16 sheetID, int32 inkEffect, bool32 screenRelative);
