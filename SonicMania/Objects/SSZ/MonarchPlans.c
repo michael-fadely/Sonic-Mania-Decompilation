@@ -47,7 +47,13 @@ void MonarchPlans_Create(void *data)
 
     if (!SceneInfo->inEditor) {
         self->active        = ACTIVE_BOUNDS;
+#if _arch_dreamcast
+        // just making sure it gets to PT list
+        self->inkEffect     = INK_ALPHA;
+        self->alpha         = 0xFF;
+#else
         self->inkEffect     = INK_BLEND;
+#endif
         self->visible       = true;
         self->updateRange.x = 0x900000;
         self->updateRange.y = 0x900000;
