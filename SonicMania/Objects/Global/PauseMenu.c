@@ -23,6 +23,14 @@ void PauseMenu_Update(void)
         self->manager->position.y = self->position.y;
         PauseMenu_HandleButtonPositions();
     }
+
+#if _arch_dreamcast
+    // DC_DESATURATE: set before draws so PopulatePvrPalette picks it up naturally
+    if (self->state != PauseMenu_State_HandleFadeout)
+        RSDK.SetPaletteDesaturation(self->tintAlpha);
+    else
+        RSDK.SetPaletteDesaturation(0);
+#endif
 }
 
 void PauseMenu_LateUpdate(void)
@@ -981,7 +989,9 @@ void PauseMenu_Draw_RegularPause(void)
 #if MANIA_USE_PLUS
         RSDK.SetTintLookupTable(PauseMenu->tintLookupTable);
 #endif
+#if !_arch_dreamcast
         RSDK.DrawRect(0, 0, ScreenInfo->size.x, ScreenInfo->size.y, 0, self->tintAlpha, INK_TINT, true);
+#endif
 
         PauseMenu_DrawPauseMenu();
     }
@@ -995,7 +1005,9 @@ void PauseMenu_Draw_ForcePause(void)
 #if MANIA_USE_PLUS
         RSDK.SetTintLookupTable(PauseMenu->tintLookupTable);
 #endif
+#if !_arch_dreamcast
         RSDK.DrawRect(0, 0, ScreenInfo->size.x, ScreenInfo->size.y, 0, self->tintAlpha, INK_TINT, true);
+#endif
     }
 }
 
