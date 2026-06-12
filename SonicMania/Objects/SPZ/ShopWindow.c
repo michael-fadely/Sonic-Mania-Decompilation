@@ -87,6 +87,15 @@ void ShopWindow_Create(void *data)
             RSDK.SetSpriteAnimation(ShopWindow->aniFrames, 0, &self->animator, false, 0);
         }
 
+#ifdef _arch_dreamcast
+        // DC_SILHOUETTE: store regions in world-pixel coords (converted to screen-space at draw time)
+        if (self->silhouette) {
+            int32 x = FROM_FIXED(self->position.x) - self->size.x;
+            int32 y = FROM_FIXED(self->position.y) - self->size.y;
+            RSDK.SetSilhouetteRegion(x, y, x + 2 * self->size.x, y + 2 * self->size.y, self->drawGroup);
+        }
+#endif
+
         foreach_all(CircleBumper, bumper)
         {
             if (RSDK.CheckObjectCollisionTouchBox(bumper, &CircleBumper->hitboxBumper, self, &self->hitboxItem))
@@ -198,8 +207,11 @@ void ShopWindow_Draw_Normal(void)
 
     drawPos.x = (x - (uint8)(x + (screen->position.x >> 1))) << 16;
     drawPos.y = (y - (uint8)(y + (screen->position.y >> 1))) << 16;
+#ifndef _arch_dreamcast
+    // DC_SILHOUETTE: skip INK_UNMASKED rect on DC, silhouettes are handled in DrawSprite/Scene3D
     if (self->silhouette)
         RSDK.DrawRect(x, y, 2 * self->size.x, 2 * self->size.y, 0x100068, 255, INK_UNMASKED, true);
+#endif
 
     self->animator.frameID = 0;
     RSDK.DrawSprite(&self->animator, &drawPos, true);
