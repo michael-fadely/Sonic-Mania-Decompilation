@@ -179,10 +179,17 @@ void MainMenu_MenuButton_ActionCB(void)
                 saveSelect->menuWasSetup           = false;
                 ManiaModeMenu->saveSelLastButtonID = -1;
 
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UISaveSlot->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+#endif
                 for (int32 i = 0; i < saveSelect->buttonCount; ++i) {
                     Entity *store     = SceneInfo->entity;
                     SceneInfo->entity = (Entity *)saveSelect->buttons[i];
                     UISaveSlot_HandleSaveIconChange();
+#ifdef _arch_dreamcast
+                    UISaveSlot_SetupAnimators();
+#endif
                     SceneInfo->entity = store;
                 }
 #endif
@@ -195,21 +202,43 @@ void MainMenu_MenuButton_ActionCB(void)
                 EntityUIControl *control = TimeAttackMenu->timeAttackControl;
                 control->buttonID        = 0;
                 control->menuWasSetup    = false;
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UITAZoneModule->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+                control->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Time Attack");
             }
             else {
                 EntityUIControl *control = TimeAttackMenu->timeAttackControl_Legacy;
                 control->buttonID        = 0;
                 control->menuWasSetup    = false;
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UITAZoneModule->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+                control->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Time Attack Legacy");
             }
             break;
 
         case 2: // Competition
-            if (API.CheckDLC(DLC_PLUS))
+#ifdef _arch_dreamcast
+            RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+            UIVsZoneButton->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+#endif
+            if (API.CheckDLC(DLC_PLUS)) {
+#ifdef _arch_dreamcast
+                CompetitionMenu->competitionControl->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Competition");
-            else
+            }
+            else {
+#ifdef _arch_dreamcast
+                CompetitionMenu->competitionControl_Legacy->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
                 UIControl_MatchMenuTag("Competition Legacy");
+            }
             break;
 
         case 3: // Options
@@ -228,10 +257,17 @@ void MainMenu_MenuButton_ActionCB(void)
                 EntityUIControl *encoreSaveSel = ManiaModeMenu->encoreSaveSelect;
                 encoreSaveSel->buttonID        = 1;
                 encoreSaveSel->menuWasSetup    = false;
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UISaveSlot->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+#endif
                 for (int32 i = 0; i < encoreSaveSel->buttonCount; ++i) {
                     Entity *store     = SceneInfo->entity;
                     SceneInfo->entity = (Entity *)encoreSaveSel->buttons[i];
                     UISaveSlot_HandleSaveIconChange();
+#ifdef _arch_dreamcast
+                    UISaveSlot_SetupAnimators();
+#endif
                     SceneInfo->entity = store;
                 }
                 UIControl_MatchMenuTag("Encore Mode");
@@ -282,6 +318,39 @@ void MainMenu_HandleUnlocks(void)
     EntityUIButton *compButton = API.CheckDLC(DLC_PLUS) ? control->buttons[3] : control->buttons[2];
     compButton->disabled       = !GameProgress_CheckUnlock(GAMEPROGRESS_UNLOCK_COMPETITION);
 }
+
+#ifdef _arch_dreamcast
+bool32 MainMenu_SaveSel_BackPressCB(void)
+{
+    uint16 saveSelAnim = UISaveSlot->aniFrames;
+    if (saveSelAnim == (uint16)-1)
+        saveSelAnim = UITAZoneModule->aniFrames;
+    if (saveSelAnim == (uint16)-1)
+        saveSelAnim = UIVsZoneButton->aniFrames;
+    RSDK.FreeSpriteAnimation(saveSelAnim);
+    UISaveSlot->aniFrames     = (uint16)-1;
+    UITAZoneModule->aniFrames = (uint16)-1;
+    UIVsZoneButton->aniFrames = (uint16)-1;
+    UIDiorama->aniFrames  = RSDK.LoadSpriteAnimation("UI/Diorama.bin", SCOPE_STAGE);
+
+    foreach_all(UIDiorama, diorama)
+    {
+        Entity *store     = SceneInfo->entity;
+        SceneInfo->entity = (Entity *)diorama;
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 0, &diorama->maskAnimator, true, 0);
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 1, &diorama->staticAnimator, true, 0);
+        diorama->lastDioramaID = -1;
+        SceneInfo->entity = store;
+    }
+
+    EntityUIControl *control   = UIControl_GetUIControl();
+    control->selectionDisabled = true;
+    if (control->buttons[control->buttonID])
+        control->buttons[control->buttonID]->isSelected = false;
+    UITransition_StartTransition(UIControl_ReturnToParentMenu, 0);
+    return false;
+}
+#endif
 
 void MainMenu_SetupActions(void)
 {

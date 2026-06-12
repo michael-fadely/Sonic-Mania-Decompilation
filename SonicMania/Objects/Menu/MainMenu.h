@@ -48,6 +48,9 @@ void MainMenu_BuyPlusDialogCB(void);
 void MainMenu_HandleUnlocks(void);
 void MainMenu_SetupActions(void);
 void MainMenu_MenuSetupCB(void);
+#ifdef _arch_dreamcast
+bool32 MainMenu_SaveSel_BackPressCB(void);
+#endif
 #endif
 
 #endif //! OBJ_MAINMENU_H

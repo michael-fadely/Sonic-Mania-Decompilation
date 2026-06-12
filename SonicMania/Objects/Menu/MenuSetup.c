@@ -657,6 +657,9 @@ void MenuSetup_SetupActions(void)
 
     saveSel->menuUpdateCB = MenuSetup_SaveSel_MenuUpdateCB;
     saveSel->yPressCB     = MenuSetup_SaveSel_YPressCB;
+#ifdef _arch_dreamcast
+    saveSel->backPressCB = MenuSetup_SaveSel_BackPressCB;
+#endif
 
     extras->processButtonInputCB = MenuSetup_Extras_ProcessButtonCB;
 
@@ -928,6 +931,17 @@ void MenuSetup_MenuButton_ActionCB(void)
                 UIControl_MatchMenuTag("No Save Mode");
             }
             else {
+#ifdef _arch_dreamcast
+                RSDK.FreeSpriteAnimation(UIDiorama->aniFrames);
+                UISaveSlot->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+                foreach_all(UISaveSlot, saveSlot)
+                {
+                    Entity *store     = SceneInfo->entity;
+                    SceneInfo->entity = (Entity *)saveSlot;
+                    UISaveSlot_SetupAnimators();
+                    SceneInfo->entity = store;
+                }
+#endif
                 MenuSetup->saveSelect->buttonID = 7;
                 UIControl_MatchMenuTag("Save Select");
             }
@@ -1028,6 +1042,32 @@ int32 MenuSetup_GetMedalMods(void)
 
     return mods;
 }
+
+#ifdef _arch_dreamcast
+bool32 MenuSetup_SaveSel_BackPressCB(void)
+{
+    RSDK.FreeSpriteAnimation(UISaveSlot->aniFrames);
+    UISaveSlot->aniFrames = (uint16)-1;
+    UIDiorama->aniFrames  = RSDK.LoadSpriteAnimation("UI/Diorama.bin", SCOPE_STAGE);
+
+    foreach_all(UIDiorama, diorama)
+    {
+        Entity *store     = SceneInfo->entity;
+        SceneInfo->entity = (Entity *)diorama;
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 0, &diorama->maskAnimator, true, 0);
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 1, &diorama->staticAnimator, true, 0);
+        diorama->lastDioramaID = -1;
+        SceneInfo->entity = store;
+    }
+
+    EntityUIControl *control   = UIControl_GetUIControl();
+    control->selectionDisabled = true;
+    if (control->buttons[control->buttonID])
+        control->buttons[control->buttonID]->isSelected = false;
+    UITransition_StartTransition(UIControl_ReturnToParentMenu, 0);
+    return false;
+}
+#endif
 
 void MenuSetup_OpenSaveSelectMenu(void)
 {

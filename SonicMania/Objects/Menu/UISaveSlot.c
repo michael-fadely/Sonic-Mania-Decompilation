@@ -284,7 +284,14 @@ void UISaveSlot_Create(void *data)
     }
 }
 
-void UISaveSlot_StageLoad(void) { UISaveSlot->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE); }
+void UISaveSlot_StageLoad(void)
+{
+#ifdef _arch_dreamcast
+    UISaveSlot->aniFrames = (uint16)-1;
+#else
+    UISaveSlot->aniFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
+#endif
+}
 
 #if MANIA_USE_PLUS
 uint8 UISaveSlot_GetPlayerIDFromID(uint8 id)
