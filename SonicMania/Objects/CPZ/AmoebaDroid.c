@@ -240,6 +240,19 @@ void AmoebaDroid_Draw_AmoebaDroid(void)
     RSDK_THIS(AmoebaDroid);
 
     if (self->invincibleTimer & 1) {
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_FLASH;
+
+        self->direction = FLIP_NONE;
+        RSDK.DrawSprite(&self->animator, NULL, false);
+        RSDK.DrawSprite(&self->attractorTopAnimator, NULL, false);
+        RSDK.DrawSprite(&self->attractorSideAnimator, NULL, false);
+
+        self->direction = FLIP_X;
+        RSDK.DrawSprite(&self->attractorSideAnimator, NULL, false);
+
+        self->inkEffect = INK_NONE;
+#else
         RSDK.CopyPalette(1, 16, 0, 128, 10);
 
         self->direction = FLIP_NONE;
@@ -251,6 +264,7 @@ void AmoebaDroid_Draw_AmoebaDroid(void)
         RSDK.DrawSprite(&self->attractorSideAnimator, NULL, false);
 
         RSDK.CopyPalette(1, 0, 0, 128, 10);
+#endif
     }
     else {
         self->direction = FLIP_NONE;
