@@ -396,8 +396,13 @@ void CrimsonEye_SetupBG2Layer(void)
 }
 
 // Manages the black strucures that move in the foreground
+#ifdef _arch_dreamcast
+void CrimsonEye_DrawHook_DisableFGSilhouette(void) { RSDK.SetForceBlackTileRender(false); }
+void CrimsonEye_DrawHook_EnableFGSilhouette(void) { RSDK.SetForceBlackTileRender(true); }
+#else
 void CrimsonEye_DrawHook_DisableFGSilhouette(void) { RSDK.SetActivePalette(0, 0, ScreenInfo->size.y); }
 void CrimsonEye_DrawHook_EnableFGSilhouette(void) { RSDK.SetActivePalette(5, 0, ScreenInfo->size.y); }
+#endif
 
 void CrimsonEye_SetArrowDir(int32 type)
 {

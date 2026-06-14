@@ -687,6 +687,7 @@ typedef enum {
 #if _arch_dreamcast
     INK_FLASH,
     INK_FLASH_GIGA,
+    INK_BLACK,
 #endif
 } InkEffects;
 
@@ -1641,6 +1642,7 @@ typedef struct {
     void (*SetSilhouetteRegion)(int32 x1, int32 y1, int32 x2, int32 y2, int32 drawGroup); // DC_SILHOUETTE
     void (*ClearSilhouetteRegions)(void); // DC_SILHOUETTE
     void (*SetPaletteDesaturation)(uint8 amount); // DC_DESATURATE
+    void (*SetForceBlackTileRender)(bool32 enable); // DC_INK_BLACK
 #endif
     uint16 (*CreateSpriteAnimation)(const char *filePath, uint32 frameCount, uint32 listCount, uint8 scope);
     void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int32 frameID);
