@@ -1143,13 +1143,17 @@ void Drillerdroid_Draw_Boss(void)
 {
     RSDK_THIS(Drillerdroid);
 
-    RSDK.SetLimitedFade(0, 1, 2, self->alpha, 32, 41);
-
 #ifdef _arch_dreamcast
     int32 storeInk = self->inkEffect;
     if (self->invincibilityTimer & 1)
         self->inkEffect = INK_FLASH;
+
+    uint32 t = self->alpha;
+    if (t > 0)
+        RSDK.SetSpriteTint(0xFF000000 | (0xFF << 16) | ((255 - (t >> 1)) << 8) | (255 - (t >> 1)));
 #else
+    RSDK.SetLimitedFade(0, 1, 2, self->alpha, 32, 41);
+
     if (self->invincibilityTimer & 1) {
         RSDK.SetPaletteEntry(0, 32, 0xE0E0E0);
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
@@ -1307,6 +1311,8 @@ void Drillerdroid_Draw_Boss(void)
 
 #ifdef _arch_dreamcast
     self->inkEffect = storeInk;
+    if (t > 0)
+        RSDK.SetSpriteTint(0xFFFFFFFF);
 #else
     RSDK.CopyPalette(1, 32, 0, 32, 10);
     RSDK.SetPaletteEntry(0, 32, 0x282028);
