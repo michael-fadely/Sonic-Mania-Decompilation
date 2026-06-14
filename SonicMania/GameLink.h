@@ -1643,6 +1643,7 @@ typedef struct {
     void (*ClearSilhouetteRegions)(void); // DC_SILHOUETTE
     void (*SetPaletteDesaturation)(uint8 amount); // DC_DESATURATE
     void (*SetForceBlackTileRender)(bool32 enable); // DC_INK_BLACK
+    void (*SetSpriteTint)(uint32 color); // DC_SPRITE_TINT
 #endif
     uint16 (*CreateSpriteAnimation)(const char *filePath, uint32 frameCount, uint32 listCount, uint8 scope);
     void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int32 frameID);
