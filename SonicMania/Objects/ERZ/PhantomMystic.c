@@ -29,7 +29,11 @@ void PhantomMystic_Draw(void)
 {
     RSDK_THIS(PhantomMystic);
 
+#if _arch_dreamcast
+    RSDK.SetActivePalette(2, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#else
     RSDK.SetActivePalette(4, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#endif
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -187,6 +191,13 @@ void PhantomMystic_Draw_CupSwap(void)
     RSDK_THIS(PhantomMystic);
 
     Vector2 drawPos = self->position;
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+    RSDK.DrawSprite(&self->mysticAnimator, &self->mysticPos, false);
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1) {
         RSDK.CopyPalette(6, 128, 4, 128, 128);
 
@@ -197,6 +208,7 @@ void PhantomMystic_Draw_CupSwap(void)
     else {
         RSDK.DrawSprite(&self->mysticAnimator, &self->mysticPos, false);
     }
+#endif
 
     for (int32 i = 0; i < 3; ++i) {
         drawPos.x       = self->position.x + self->cupPos[i];

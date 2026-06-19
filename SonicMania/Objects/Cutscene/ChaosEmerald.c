@@ -24,6 +24,16 @@ void ChaosEmerald_Draw(void)
 {
     RSDK_THIS(ChaosEmerald);
 
+#if _arch_dreamcast
+    RSDK.CopyPalette(0, 0, 3, 0, 128);
+    for (int32 c = 0; c < 36; ++c)
+        RSDK.SetPaletteEntry(3, c + 128, ChaosEmerald->emeraldColors[c]);
+    RSDK.SetActivePalette(3, 0, ScreenInfo->size.y);
+
+    RSDK.DrawSprite(&self->animator, NULL, false);
+
+    RSDK.SetActivePalette(0, 0, ScreenInfo->size.y);
+#else
     for (int32 c = 0; c < 36; ++c) {
         ChaosEmerald->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
         RSDK.SetPaletteEntry(0, c + 128, ChaosEmerald->emeraldColors[c]);
@@ -34,6 +44,7 @@ void ChaosEmerald_Draw(void)
     for (int32 c = 0; c < 36; ++c) {
         RSDK.SetPaletteEntry(0, c + 0x80, ChaosEmerald->colorStorage[c]);
     }
+#endif
 }
 
 void ChaosEmerald_Create(void *data)

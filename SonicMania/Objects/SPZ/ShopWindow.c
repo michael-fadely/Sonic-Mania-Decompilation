@@ -102,6 +102,21 @@ void ShopWindow_StageLoad(void)
     RSDK.SetPaletteMask(RSDK.GetPaletteEntry(0, 253));
 
     ShopWindow->sfxShatter = RSDK.GetSfx("Stage/WindowShatter.wav");
+
+#if _arch_dreamcast
+    // DC_SILHOUETTE: register all silhouette regions up front so off-screen windows are included
+    RSDK.ClearSilhouetteRegions();
+    foreach_all(ShopWindow, window)
+    {
+        if (window->silhouette) {
+            int32 halfW = FROM_FIXED(window->size.x);
+            int32 halfH = FROM_FIXED(window->size.y);
+            int32 sx    = FROM_FIXED(window->position.x) - halfW;
+            int32 sy    = FROM_FIXED(window->position.y) - halfH;
+            RSDK.SetSilhouetteRegion(sx, sy, sx + 2 * halfW, sy + 2 * halfH, Zone->objectDrawGroup[1]);
+        }
+    }
+#endif
 }
 
 void ShopWindow_State_Shard(void)
@@ -198,8 +213,11 @@ void ShopWindow_Draw_Normal(void)
 
     drawPos.x = (x - (uint8)(x + (screen->position.x >> 1))) << 16;
     drawPos.y = (y - (uint8)(y + (screen->position.y >> 1))) << 16;
+#ifndef _arch_dreamcast
+    // DC_SILHOUETTE: skip INK_UNMASKED rect on DC, silhouettes are handled in DrawSprite/Scene3D
     if (self->silhouette)
         RSDK.DrawRect(x, y, 2 * self->size.x, 2 * self->size.y, 0x100068, 255, INK_UNMASKED, true);
+#endif
 
     self->animator.frameID = 0;
     RSDK.DrawSprite(&self->animator, &drawPos, true);

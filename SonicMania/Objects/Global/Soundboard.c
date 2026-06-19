@@ -49,7 +49,11 @@ void Soundboard_StaticUpdate(void)
                 Soundboard->sfxIsPlaying[s]    = false;
                 Soundboard->sfxPlayingTimer[s] = 0;
             }
+#if _arch_dreamcast
+            else if (Soundboard->sfxFadeOutDuration[s] > 0 && Soundboard->sfxChannel[s] >= 0) {
+#else
             else if (Soundboard->sfxFadeOutDuration[s] > 0 && Soundboard->sfxChannel[s] > 0) {
+#endif
                 if (Soundboard->sfxFadeOutTimer[s] >= Soundboard->sfxFadeOutDuration[s]) {
                     RSDK.StopSfx(Soundboard->sfxList[s]);
                 }

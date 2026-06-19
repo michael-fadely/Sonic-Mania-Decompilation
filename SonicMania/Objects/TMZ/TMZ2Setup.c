@@ -23,8 +23,13 @@ void TMZ2Setup_StaticUpdate(void)
 
     RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(2 * Zone->timer) >> 1) + 0x80, 192, 197);
     RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(2 * Zone->timer + 0x80) >> 1) + 0x80, 198, 203);
+#if _arch_dreamcast
+    RSDK.SetLimitedFade(3, 1, 2, (RSDK.Sin256(2 * Zone->timer) >> 1) + 0x80, 192, 197);
+    RSDK.SetLimitedFade(3, 1, 2, (RSDK.Sin256(2 * Zone->timer + 0x80) >> 1) + 0x80, 198, 203);
+#else
     RSDK.SetLimitedFade(4, 1, 2, (RSDK.Sin256(2 * Zone->timer) >> 1) + 0x80, 192, 197);
     RSDK.SetLimitedFade(4, 1, 2, (RSDK.Sin256(2 * Zone->timer + 0x80) >> 1) + 0x80, 198, 203);
+#endif
 
     if (TMZ2Setup->palDuration <= 0) {
         TMZ2Setup->palTimer += 32;
@@ -60,7 +65,11 @@ void TMZ2Setup_StageLoad(void)
 
         for (int32 i = 0; i < 256; ++i) RSDK.SetPaletteEntry(5, i, 0);
 
+#if _arch_dreamcast
+        RSDK.CopyPalette(0, 128, 3, 128, 128);
+#else
         RSDK.CopyPalette(0, 128, 4, 128, 128);
+#endif
 
         TMZ2Setup->paletteInit = true;
     }
@@ -79,7 +88,11 @@ void TMZ2Setup_StageLoad(void)
     }
 }
 
+#if _arch_dreamcast
+void TMZ2Setup_DrawHook_ApplyDynTilesPalette(void) { RSDK.SetActivePalette(3, 0, ScreenInfo->size.y); }
+#else
 void TMZ2Setup_DrawHook_ApplyDynTilesPalette(void) { RSDK.SetActivePalette(4, 0, ScreenInfo->size.y); }
+#endif
 void TMZ2Setup_DrawHook_RemoveDynTilesPalette(void) { RSDK.SetActivePalette(0, 0, ScreenInfo->size.y); }
 
 void TMZ2Setup_DrawDynTiles_Eggman(void)

@@ -88,7 +88,6 @@ void UFO_Setup_StageLoad(void)
     RSDK.SetLimitedFade(5, 0, 7, 180, 160, 255);
     RSDK.SetLimitedFade(6, 0, 7, 216, 160, 255);
 
-#if !_arch_dreamcast
     uint16 floor3DLayer = RSDK.GetTileLayerID("3D Floor");
     if (floor3DLayer != (uint16)-1) {
         TileLayer *floor3D = RSDK.GetTileLayer(floor3DLayer);
@@ -97,7 +96,6 @@ void UFO_Setup_StageLoad(void)
             floor3D->scanlineCallback = UFO_Setup_Scanline_3DFloor;
         }
     }
-#endif
 
     uint16 roof3DLayer = RSDK.GetTileLayerID("3D Roof");
     if (roof3DLayer != (uint16)-1) {
@@ -218,16 +216,15 @@ void UFO_Setup_Scanline_Playfield(ScanlineInfo *scanlines)
         cosVal += cosX;
     }
 #else
-    int32 sin  = Sin1024(camera->angle);
-    int32 cos  = Cos1024(camera->angle);
-    // avoid ICE
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
     int32 sinX = RSDK.Sin1024(-camera->angleX);
     int32 cosX = RSDK.Cos1024(-camera->angleX);
     // magic values for "the following scanlines are hacks for a UFO special stage"
     scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
     scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_UFO;
-    scanlines->position.x = 0;
-    scanlines->position.y = 0;
+    scanlines->position.x = UFO_Plasma ? (int32)UFO_Plasma->aniFrames : 0;
+    scanlines->position.y = (int32)UFO_Setup->timer;
     scanlines++;
 
     // sin/cos for each camera angle (yaw and pitch)
@@ -251,6 +248,29 @@ void UFO_Setup_Scanline_3DFloor(ScanlineInfo *scanlines)
 
     RSDK.SetClipBounds(0, 0, camera->clipY + 24, ScreenInfo->size.x, ScreenInfo->size.y);
 
+#if _arch_dreamcast
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
+    int32 sinX = RSDK.Sin1024(-camera->angleX);
+    int32 cosX = RSDK.Cos1024(-camera->angleX);
+
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_UFO_FLOOR;
+    scanlines->position.x = 0;
+    scanlines->position.y = 0;
+    scanlines++;
+
+    scanlines->deform.x = sin;
+    scanlines->deform.y = cos;
+    scanlines->position.x = sinX;
+    scanlines->position.y = cosX;
+    scanlines++;
+
+    scanlines->deform.x = camera->position.x;
+    scanlines->deform.y = camera->height + 0x1000000;
+    scanlines->position.x = camera->position.y;
+    scanlines->position.y = 0;
+#else
     int32 sin  = RSDK.Sin1024(camera->angle) >> 2;
     int32 cos  = RSDK.Cos1024(camera->angle) >> 2;
     int32 sinX = RSDK.Sin1024(-camera->angleX) >> 2;
@@ -276,6 +296,7 @@ void UFO_Setup_Scanline_3DFloor(ScanlineInfo *scanlines)
         scanlines++;
         cosVal += cosX;
     }
+#endif
 }
 void UFO_Setup_Scanline_3DRoof(ScanlineInfo *scanlines)
 {
@@ -283,6 +304,29 @@ void UFO_Setup_Scanline_3DRoof(ScanlineInfo *scanlines)
 
     RSDK.SetClipBounds(0, 0, 0, ScreenInfo->size.x, camera->clipY - 48);
 
+#if _arch_dreamcast
+    int32 sin  = RSDK.Sin1024(camera->angle);
+    int32 cos  = RSDK.Cos1024(camera->angle);
+    int32 sinX = RSDK.Sin1024(-camera->angleX);
+    int32 cosX = RSDK.Cos1024(-camera->angleX);
+
+    scanlines->deform.x = (uint32)SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = (uint32)SCANLINE_MINOR_MAGIC_ROOF;
+    scanlines->position.x = 0;
+    scanlines->position.y = 0;
+    scanlines++;
+
+    scanlines->deform.x = sin;
+    scanlines->deform.y = cos;
+    scanlines->position.x = sinX;
+    scanlines->position.y = cosX;
+    scanlines++;
+
+    scanlines->deform.x = camera->position.x;
+    scanlines->deform.y = camera->height;
+    scanlines->position.x = camera->position.y;
+    scanlines->position.y = (camera->height >> 2) - 0x600000;
+#else
     int32 sin  = RSDK.Sin1024(camera->angle) >> 2;
     int32 cos  = RSDK.Cos1024(camera->angle) >> 2;
     int32 sinX = RSDK.Sin1024(-camera->angleX) >> 2;
@@ -309,6 +353,7 @@ void UFO_Setup_Scanline_3DRoof(ScanlineInfo *scanlines)
         scanlines++;
         cosVal += cosX;
     }
+#endif
 }
 
 void UFO_Setup_PlaySphereSfx(void)

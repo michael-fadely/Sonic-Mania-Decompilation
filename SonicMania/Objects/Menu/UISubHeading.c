@@ -155,6 +155,11 @@ void UISubHeading_SetupActions(void)
 
     EntityUIControl *saveSelEncore = ManiaModeMenu->encoreSaveSelect;
     saveSelEncore->menuUpdateCB    = UISubHeading_SaveSel_MenuUpdateCB;
+
+#ifdef _arch_dreamcast
+    saveSel->backPressCB       = MainMenu_SaveSel_BackPressCB;
+    saveSelEncore->backPressCB = MainMenu_SaveSel_BackPressCB;
+#endif
 }
 
 void UISubHeading_HandleMenuReturn(int32 slot)

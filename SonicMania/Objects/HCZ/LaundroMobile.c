@@ -1433,10 +1433,16 @@ void LaundroMobile_Draw_Boss(void)
 {
     RSDK_THIS(LaundroMobile);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (LaundroMobile->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (LaundroMobile->invincibilityTimer & 1) {
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
         RSDK.SetPaletteEntry(1, 128, 0xE0E0E0);
     }
+#endif
 
     Vector2 drawPos;
     drawPos.x = self->position.x - 0x20000;
@@ -1464,18 +1470,28 @@ void LaundroMobile_Draw_Boss(void)
     drawPos.y += 0x300000;
     RSDK.DrawSprite(&self->mainAnimator, &drawPos, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
     RSDK.SetPaletteEntry(1, 128, 0x000000);
+#endif
 }
 
 void LaundroMobile_Draw_Boss_Destroyed(void)
 {
     RSDK_THIS(LaundroMobile);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (LaundroMobile->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     if (LaundroMobile->invincibilityTimer & 1) {
         RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
         RSDK.SetPaletteEntry(1, 128, 0xE0E0E0);
     }
+#endif
 
     for (int32 r = 0; r < 4; ++r) {
         self->direction = r >= 2 ? FLIP_X : FLIP_NONE;
@@ -1522,8 +1538,12 @@ void LaundroMobile_Draw_Boss_Destroyed(void)
     }
 
     self->direction = FLIP_NONE;
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     RSDK.SetPaletteEntry(0, 128, 0x000000);
     RSDK.SetPaletteEntry(1, 128, 0x000000);
+#endif
 }
 
 void LaundroMobile_StateBomb_Spawner(void)

@@ -27,10 +27,16 @@ void PhantomRider_Draw(void)
 {
     RSDK_THIS(PhantomRider);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     RSDK.SetActivePalette(4, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
 
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(6, 128, 4, 128, 128);
+#endif
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -39,10 +45,14 @@ void PhantomRider_Draw(void)
         RSDK.DrawSprite(&self->mainAnimator, NULL, false);
     }
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(5, 128, 4, 128, 128);
 
     RSDK.SetActivePalette(0, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#endif
 }
 
 void PhantomRider_Create(void *data)

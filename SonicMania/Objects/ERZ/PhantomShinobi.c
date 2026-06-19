@@ -30,10 +30,16 @@ void PhantomShinobi_Draw(void)
 {
     RSDK_THIS(PhantomShinobi);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (self->invincibilityTimer & 1)
+        self->inkEffect = INK_FLASH;
+#else
     RSDK.SetActivePalette(4, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
 
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(6, 128, 4, 128, 128);
+#endif
 
     self->rotation = self->rotStore >> 7;
 
@@ -54,10 +60,14 @@ void PhantomShinobi_Draw(void)
 
     RSDK.DrawSprite(&self->bodyAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+    self->inkEffect = storeInk;
+#else
     if (self->invincibilityTimer & 1)
         RSDK.CopyPalette(5, 128, 4, 128, 128);
 
     RSDK.SetActivePalette(0, 0, ScreenInfo[SceneInfo->currentScreenID].size.y);
+#endif
 }
 
 void PhantomShinobi_Create(void *data)

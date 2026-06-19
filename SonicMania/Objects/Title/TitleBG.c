@@ -9,6 +9,28 @@
 
 ObjectTitleBG *TitleBG;
 
+#if _arch_dreamcast
+// colors from the graphics used for the original INK_MASKED effect
+static const uint32 cycleColors[7] = {
+    0x8060E0, 0xA080E0, 0xB090E0, 0x0068F0, 0x28A8F0, 0x68D0F0, 0x98E0F0,
+};
+
+// 32 step color cycle: purple, light purple, blue ,light blue and back again
+static const int32 colorMap[32] = {
+    0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1,
+    0, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 4, 4, 4,
+};
+
+static const uint8 fringeIndices[] = {
+    62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,
+    90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,
+    114,115,116,117,118,119,120,121,122,123,124,125,126,127,
+    45,46,47,152,162,163,167,172,173,174,245,246
+};
+
+static int32 wingTimer = 0;
+#endif
+
 void TitleBG_Update(void)
 {
     RSDK_THIS(TitleBG);
@@ -43,6 +65,21 @@ void TitleBG_StaticUpdate(void)
         TitleBG->palTimer = 0;
         RSDK.RotatePalette(0, 140, 143, false);
     }
+
+#ifdef _arch_dreamcast
+    // reproduce the original color cycle INK_MASKED effect on the fringe of the wings
+    // done by patching the sprite sheet when it gets loaded
+    // with a run of previously unused palette indices to replace the mask color
+    // here we update the palette indices to do the color cycle effect
+    // not 100% accurate but REALLY CLOSE
+
+    wingTimer--;
+
+    for (int32 i = 0; i < 78; i++) {
+        int32 phase = ((i + (wingTimer >> 1)) & 31);
+        RSDK.SetPaletteEntry(0, fringeIndices[i], cycleColors[colorMap[phase]]);
+    }
+#endif // _arch_dreamcast
 }
 
 void TitleBG_Draw(void)
@@ -142,6 +179,12 @@ void TitleBG_Scanline_Island(ScanlineInfo *scanlines)
     int32 sine   = RSDK.Sin1024(-TitleBG->angle) >> 2;
     int32 cosine = RSDK.Cos1024(-TitleBG->angle) >> 2;
 
+#if _arch_dreamcast
+    scanlines->deform.x = SCANLINE_MAJOR_MAGIC_3DTILES;
+    scanlines->deform.y = SCANLINE_MINOR_MAGIC_ISLAND;
+    scanlines->position.x = sine;
+    scanlines->position.y = cosine;
+#else
     ScanlineInfo *scanlinePtr = &scanlines[168];
     for (int32 i = 16; i < 88; ++i) {
         int32 id  = 0xA00000 / (8 * i);
@@ -154,6 +197,7 @@ void TitleBG_Scanline_Island(ScanlineInfo *scanlines)
         scanlinePtr->position.x = sin - ScreenInfo->center.x * scanlinePtr->deform.x - 0xA000 * sine + 0x2000000;
         ++scanlinePtr;
     }
+#endif
 }
 
 #if GAME_INCLUDE_EDITOR

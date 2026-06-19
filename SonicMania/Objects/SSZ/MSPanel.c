@@ -24,6 +24,16 @@ void MSPanel_Draw(void)
 {
     RSDK_THIS(MSPanel);
 
+#ifdef _arch_dreamcast
+    int32 storeInk = self->inkEffect;
+    if (MetalSonic->invincibilityTimerPanel & 1)
+        self->inkEffect = INK_FLASH;
+
+    RSDK.DrawSprite(&self->cablesAnimator, NULL, false);
+    RSDK.DrawSprite(&self->panelAnimator, NULL, false);
+
+    self->inkEffect = storeInk;
+#else
     if (MetalSonic->invincibilityTimerPanel & 1) {
         RSDK.CopyPalette(2, 32, 0, 32, 16);
         RSDK.CopyPalette(2, 160, 0, 160, 16);
@@ -38,6 +48,7 @@ void MSPanel_Draw(void)
         RSDK.DrawSprite(&self->cablesAnimator, NULL, false);
         RSDK.DrawSprite(&self->panelAnimator, NULL, false);
     }
+#endif
 }
 
 void MSPanel_Create(void *data)

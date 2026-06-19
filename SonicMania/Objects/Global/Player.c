@@ -1277,12 +1277,17 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks)
         player->isTransforming  = true;
 #endif
 
+#if _arch_dreamcast
+        if (!ERZStart)
+            Music_PlayJingle(TRACK_SUPER);
+#else
 #if MANIA_USE_PLUS
         if (!ERZStart && globals->superMusicEnabled)
             Music_FadeOut(0.8);
 #else
         if (!ERZStart)
             Music_TransitionTrack(TRACK_SUPER, 0.04);
+#endif
 #endif
 
         player->jumpAbilityState = 0;

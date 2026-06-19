@@ -46,6 +46,16 @@ void UIButtonLabel_Create(void *data)
     self->updateRange.x = 0x800000;
     self->updateRange.y = 0x300000;
 
+#ifdef _arch_dreamcast
+    // Shifts the button labels to match the layout of the Dreamcast controller graphic
+    self->position.x -= 8 << 16;
+    self->position.y += 4 << 16;
+    if (self->position.x > (2000 << 16)) {
+        self->position.y += 6 << 16;
+        self->position.x += 4 << 16;
+    }
+#endif
+
     RSDK.SetSpriteAnimation(UIButtonLabel->aniFrames, 0, &self->frameAnimator, true, self->type);
     RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->textAnimator, true, self->frameID);
 

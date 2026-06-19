@@ -7,6 +7,9 @@
 
 #include "Game.h"
 #include <time.h>
+#if _arch_dreamcast
+#include <kos/thread.h>
+#endif
 
 ObjectBSS_Setup *BSS_Setup;
 
@@ -36,6 +39,12 @@ void BSS_Setup_Update(void)
     ScreenInfo->position.x = 0x100 - ScreenInfo->center.x;
 
 #if _arch_dreamcast
+    // 1ms sleep gives the PVR time to finish the previous frame's render
+    // before palette RAM is modified
+    // without this, occasional single frame checkerboard inversions occur
+    // when palettePage toggles and the screen flickers
+    thd_sleep(1);
+
     // debounce on the palettePage value
     // update the paletteLine value to use
     // only when updating the debounced palettePage

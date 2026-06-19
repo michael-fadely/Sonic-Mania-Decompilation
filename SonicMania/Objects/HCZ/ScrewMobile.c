@@ -497,12 +497,22 @@ void ScrewMobile_Draw_ScrewMobile(void)
         RSDK.DrawSprite(&self->mobileAnimator, NULL, false);
     }
     else {
+#ifdef _arch_dreamcast
+        int32 storeInk = self->inkEffect;
+        if (self->invincibilityTimer & 1)
+            self->inkEffect = INK_FLASH;
+#else
         if (self->invincibilityTimer & 1)
             RSDK.SetPaletteEntry(0, 128, 0xE0E0E0);
+#endif
 
         self->mobileAnimator.frameID = 0;
         RSDK.DrawSprite(&self->mobileAnimator, NULL, false);
+#ifdef _arch_dreamcast
+        self->inkEffect = storeInk;
+#else
         RSDK.SetPaletteEntry(0, 128, 0x0000);
+#endif
         RSDK.DrawSprite(&self->rackAnimator, NULL, false);
 
         int32 storeDir = self->direction;

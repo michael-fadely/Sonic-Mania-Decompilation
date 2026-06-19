@@ -96,6 +96,9 @@ typedef uint32 color;
 #define SCANLINE_MINOR_MAGIC_UFO ((uint32)0x90ABCDEF)
 #define SCANLINE_MINOR_MAGIC_PINBALL ((uint32)0xCDEF0123)
 #define SCANLINE_MINOR_MAGIC_ISLAND ((uint32)0x890ABCDE)
+#define SCANLINE_MINOR_MAGIC_ROOF   ((uint32)0x56789ABC)
+#define SCANLINE_MINOR_MAGIC_PBL_BG ((uint32)0x3456789A)
+#define SCANLINE_MINOR_MAGIC_UFO_FLOOR ((uint32)0x2345678B)
 #endif
 
 // -------------------------
@@ -681,6 +684,11 @@ typedef enum {
     INK_TINT,
     INK_MASKED,
     INK_UNMASKED,
+#if _arch_dreamcast
+    INK_FLASH,
+    INK_FLASH_GIGA,
+    INK_BLACK,
+#endif
 } InkEffects;
 
 typedef enum { FX_NONE = 0, FX_FLIP = 1, FX_ROTATE = 2, FX_SCALE = 4 } DrawFX;
@@ -1595,6 +1603,12 @@ typedef struct {
     void (*DrawBlendedFace)(Vector2 *vertices, color *vertColors, int32 vertCount, int32 alpha, int32 inkEffect);
 #if _arch_dreamcast
     void (*Draw3DSprite)(Animator *animator, Vector4f *position, bool32 screenRelative);
+    float (*GetDepth)(void);
+    void (*SetDepth)(float depth);
+    void (*DrawCircleClipped)(int32 x, int32 y, int32 radius, uint32 color, int32 alpha, int32 inkEffect, bool32 screenRelative,
+                              int32 triTopX, int32 triTopY, int32 triBotLeftX, int32 triBotY, int32 triBotRightX);
+    void (*DrawCircleOutlineClipped)(int32 x, int32 y, int32 innerRadius, int32 outerRadius, uint32 color, int32 alpha, int32 inkEffect,
+                                    bool32 screenRelative, int32 triTopX, int32 triTopY, int32 triBotLeftX, int32 triBotY, int32 triBotRightX);
 #endif
     void (*DrawSprite)(Animator *animator, Vector2 *position, bool32 screenRelative);
     void (*DrawDeformedSprite)(uint16 sheetID, int32 inkEffect, bool32 screenRelative);
@@ -1623,6 +1637,14 @@ typedef struct {
 
     // Sprite Animations & Frames
     uint16 (*LoadSpriteAnimation)(const char *filePath, uint8 scope);
+#if _arch_dreamcast
+    void (*FreeSpriteAnimation)(uint16 aniFrames);
+    void (*SetSilhouetteRegion)(int32 x1, int32 y1, int32 x2, int32 y2, int32 drawGroup); // DC_SILHOUETTE
+    void (*ClearSilhouetteRegions)(void); // DC_SILHOUETTE
+    void (*SetPaletteDesaturation)(uint8 amount); // DC_DESATURATE
+    void (*SetForceBlackTileRender)(bool32 enable); // DC_INK_BLACK
+    void (*SetSpriteTint)(uint32 color); // DC_SPRITE_TINT
+#endif
     uint16 (*CreateSpriteAnimation)(const char *filePath, uint32 frameCount, uint32 listCount, uint8 scope);
     void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int32 frameID);
     void (*EditSpriteAnimation)(uint16 aniFrames, uint16 listID, const char *name, int32 frameOffset, uint16 frameCount, int16 speed, uint8 loopIndex,

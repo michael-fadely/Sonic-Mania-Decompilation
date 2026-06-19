@@ -326,8 +326,12 @@ void WeatherMobile_Draw_Eggman(void)
     RSDK_THIS(WeatherMobile);
 
     if (self->invincibilityTimer & 1) {
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_FLASH;
+#else
         RSDK.CopyPalette(2, 32, 0, 32, 10);
         RSDK.SetPaletteEntry(0, 128, 0xF0F0F0);
+#endif
 
         RSDK.DrawSprite(&self->radarDishLAnimator, NULL, false);
         RSDK.DrawSprite(&self->seatAnimator, NULL, false);
@@ -336,8 +340,12 @@ void WeatherMobile_Draw_Eggman(void)
         RSDK.DrawSprite(&self->decorAnimator, NULL, false);
         RSDK.DrawSprite(&self->radarDishRAnimator, NULL, false);
 
+#ifdef _arch_dreamcast
+        self->inkEffect = INK_NONE;
+#else
         RSDK.CopyPalette(1, 32, 0, 32, 10);
         RSDK.SetPaletteEntry(0, 128, 0x000000);
+#endif
     }
     else {
         RSDK.DrawSprite(&self->radarDishLAnimator, NULL, false);
