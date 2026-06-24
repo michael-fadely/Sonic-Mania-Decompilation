@@ -161,7 +161,11 @@ void OptionsMenu_SetupActions(void)
         if (UIControl_ContainsPos(optionsControl, &button->position) && button->listID == 3) {
 
             switch (button->frameID) {
+#if _arch_dreamcast
+                case 0: button->isDisabled = true; break;
+#else
                 case 0: button->actionCB = OptionsMenu_VideoMenuButton_ActionCB; break;
+#endif
                 case 1: button->actionCB = OptionsMenu_SoundMenuButton_ActionCB; break;
 
                 case 2:
