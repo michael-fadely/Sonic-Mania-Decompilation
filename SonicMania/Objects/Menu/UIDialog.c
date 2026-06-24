@@ -34,7 +34,7 @@ void UIDialog_Draw(void)
     UIDialog_DrawBGShapes();
 
 #ifdef _arch_dreamcast
-    int32 xScale = ScreenInfo->size.x < 424 ? ScreenInfo->size.x * 256 / 424 : 256;
+    int32 xScale = ScreenInfo->size.x * 256 / 424;
 #else
     int32 xScale = 256;
 #endif
