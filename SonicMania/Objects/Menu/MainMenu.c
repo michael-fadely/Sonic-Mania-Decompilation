@@ -377,6 +377,40 @@ void MainMenu_SetupActions(void)
         }
     }
 
+#ifdef _arch_dreamcast
+    // Competition mode is unsupported on Dreamcast: remove the button entirely
+    // frameID 2 is Competition regardless of DLC layout
+    EntityUIControl *control = MainMenu->menuControl;
+
+    int32 compID = -1;
+    for (int32 i = 0; i < control->buttonCount; ++i) {
+        if (control->buttons[i] && control->buttons[i]->frameID == 2) {
+            compID = i;
+            break;
+        }
+    }
+
+    if (compID >= 0) {
+        // steal spacing between entries from a neighbour
+        // entries below Competition slide up and leave no gap in the list
+        int32 neighbor = compID > 0 ? compID - 1 : compID + 1;
+        int32 spacingY = 0;
+        if ((neighbor >= 0) && (neighbor < control->buttonCount) && control->buttons[neighbor])
+            spacingY = abs(control->buttons[compID]->position.y - control->buttons[neighbor]->position.y);
+
+        destroyEntity(control->buttons[compID]);
+
+        for (int32 i = compID; i < control->buttonCount - 1; ++i) {
+            control->buttons[i] = control->buttons[i + 1];
+            control->buttons[i]->position.y -= spacingY;
+        }
+        control->buttons[control->buttonCount - 1] = NULL;
+
+        --control->buttonCount;
+        --control->rowCount;
+    }
+#endif
+
     MainMenu->menuControl->menuSetupCB = MainMenu_MenuSetupCB;
 }
 
