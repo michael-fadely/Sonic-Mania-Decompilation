@@ -316,7 +316,12 @@ void MainMenu_HandleUnlocks(void)
     taButton->disabled       = !GameProgress_CheckUnlock(GAMEPROGRESS_UNLOCK_TIMEATTACK);
 
     EntityUIButton *compButton = API.CheckDLC(DLC_PLUS) ? control->buttons[3] : control->buttons[2];
+#ifndef _arch_dreamcast
     compButton->disabled       = !GameProgress_CheckUnlock(GAMEPROGRESS_UNLOCK_COMPETITION);
+#else
+    // Competition mode is just not feasible for us right now. Permanently disable on Dreamcast.
+    compButton->disabled = true;
+#endif
 }
 
 #ifdef _arch_dreamcast
