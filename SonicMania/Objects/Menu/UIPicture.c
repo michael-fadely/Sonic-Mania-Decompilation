@@ -47,7 +47,7 @@ void UIPicture_Create(void *data)
 
     if (!SceneInfo->inEditor) {
 #ifdef _arch_dreamcast
-        if (RSDK.CheckSceneFolder("Logos") && ScreenInfo->size.x < 424) {
+        if (RSDK.CheckSceneFolder("Logos")) {
             int32 center  = 0x100 << 16;
             int32 offset  = self->position.x - center;
             self->position.x = center + offset * ScreenInfo->size.x / 424;

@@ -125,10 +125,7 @@ void UIButtonPrompt_Draw(void)
 
     UIButtonPrompt_SetButtonSprites();
 
-#ifdef _arch_dreamcast
-    if (ScreenInfo->size.x >= 424)
-        RSDK.DrawSprite(&self->decorAnimator, NULL, false);
-#else
+#ifndef _arch_dreamcast
     RSDK.DrawSprite(&self->decorAnimator, NULL, false);
 #endif
 
