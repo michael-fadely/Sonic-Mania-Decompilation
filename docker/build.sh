@@ -97,7 +97,7 @@ cmd_disc() {
   dhost "docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
       set -e
       source \$KOS_BASE/environ.sh
-      elf=\$(find workspace/build-dc -name RetroEngine -o -name \"*.elf\" | head -1)
+      elf=\$(find workspace/build-dc -name RSDKv5.elf -o -name RetroEngine -o -name \"*.elf\" | head -1)
       [ -n \"\$elf\" ] || { echo \"no RetroEngine ELF found — run engine first\"; exit 1; }
       command -v mkdcdisc >/dev/null || { echo \"mkdcdisc missing in image\"; exit 3; }
       mkdcdisc -e \"\$elf\" -d workspace/cd-data -o workspace/SonicManiaDC.$fmt -N
