@@ -108,17 +108,36 @@ cmd_fixperms() {
 }
 
 # Build a bootable Dreamcast disc image (.cdi by default) from the ELF + assets.
+# Disc layout the KallistiOS port expects at /cd/:
+#   /cd/Data.rsdk           datapack (GameConfig, Stages, Objects, Tiles, Palettes)
+#   /cd/Data/Sprites|Images|Music|SoundFX|Video|Meshes   loose DC-native media
+# The media loaders (Sprite/Audio/Video/Scene3D) fOpen loose files under
+# ${KOS_USER_DIR}/Data/... directly; everything else comes from the datapack.
 cmd_disc() {
+  cmd_fixperms
   sync_to_remote
   local fmt="${1:-cdi}"
-  log "packaging bootable Dreamcast disc (.$fmt) with mkdcdisc"
-  dhost "docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
+  log "assembling /cd root (Data.rsdk + Data/<media>) and packaging .$fmt with mkdcdisc"
+  dhost "uid=\$(id -u); gid=\$(id -g); docker run --rm --user \$uid:\$gid -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
       set -e
       source \$KOS_BASE/environ.sh
       elf=\$(find workspace/build-dc -name RSDKv5.elf -o -name RetroEngine -o -name \"*.elf\" | head -1)
-      [ -n \"\$elf\" ] || { echo \"no RetroEngine ELF found — run engine first\"; exit 1; }
+      [ -n \"\$elf\" ] || { echo \"no engine ELF found — run engine first\"; exit 1; }
       command -v mkdcdisc >/dev/null || { echo \"mkdcdisc missing in image\"; exit 3; }
-      mkdcdisc -e \"\$elf\" -d workspace/cd-data -o workspace/SonicManiaDC.$fmt -N
+      rsdk=workspace/assets/Data.rsdk
+      [ -f \"\$rsdk\" ] || { echo \"Data.rsdk missing at \$rsdk\"; exit 4; }
+      # Assemble the /cd root fresh each time.
+      root=workspace/cd-root
+      rm -rf \"\$root\"; mkdir -p \"\$root/Data\"
+      cp \"\$rsdk\" \"\$root/Data.rsdk\"
+      for d in Sprites Images Music SoundFX Video Meshes; do
+        [ -d workspace/cd-data/\$d ] && cp -a workspace/cd-data/\$d \"\$root/Data/\"
+      done
+      echo \"cd-root assembled:\"; du -sh \"\$root\"; ls -1 \"\$root\" \"\$root/Data\"
+      # strip the ELF to shrink the bootable binary (debug info is huge)
+      cp \"\$elf\" workspace/RSDKv5-stripped.elf
+      sh-elf-strip workspace/RSDKv5-stripped.elf || true
+      mkdcdisc -e workspace/RSDKv5-stripped.elf -d \"\$root\" -o workspace/SonicManiaDC.$fmt -N -V SONICMANIA
   '"
   log "disc image: $REMOTE_DIR/workspace/SonicManiaDC.$fmt"
 }
