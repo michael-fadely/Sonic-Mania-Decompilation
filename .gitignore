@@ -249,3 +249,6 @@ android/local.properties
 
 *.res
 dependencies/*
+
+# Dreamcast build workspace (Docker, KallistiOS toolchain, assets) — not versioned
+workspace/
