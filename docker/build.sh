@@ -40,6 +40,9 @@ sync_to_remote() {
   ssh "$REMOTE" "mkdir -p '$REMOTE_DIR'"
   rsync -a --delete \
     --exclude 'workspace/' \
+    --exclude '*/cmake-build-release/' \
+    --exclude 'cmake-build-release/' \
+    --exclude 'build-dc/' \
     "$REPO_ROOT/" "$REMOTE:$REMOTE_DIR/"
 }
 
@@ -75,18 +78,33 @@ cmd_shell() {
 }
 
 cmd_assets() {
+  cmd_fixperms
   sync_to_remote
   local rsdk_host="${1:-workspace/assets/Data.rsdk}"
   log "processing assets from $rsdk_host (RSDKv5 extract -> DC-native dtex/adpcm/mpeg)"
   # generate_assets.sh must run from its own dir (uses local *.txt concat lists).
   # It writes the staged, DC-ready data tree we later burn to /cd/.
-  dhost "docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
+  # Run as the host UID/GID so build artifacts don't pollute the tree as root
+  # (breaks the next rsync --delete). id resolved on the remote host.
+  dhost "uid=\$(id -u); gid=\$(id -g); docker run --rm --user \$uid:\$gid -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
       set -e
       source \$KOS_BASE/environ.sh
+      export HOME=/tmp
       cd dependencies/RSDKv5/dreamcast
       ./generate_assets.sh /work/${rsdk_host} /work/workspace/asset-src /work/workspace/cd-data
   '"
   log "staged DC assets under $REMOTE_DIR/workspace/cd-data"
+}
+
+# Reclaim ownership of any root-owned files a previous root container left in the
+# tree (a root container chowns them back to the invoking host user). Idempotent.
+cmd_fixperms() {
+  [[ -z "$REMOTE" ]] && return 0
+  dhost "uid=\$(id -u); gid=\$(id -g);
+    if find '$REMOTE_DIR' -user 0 -print -quit 2>/dev/null | grep -q .; then
+      echo '[build] reclaiming root-owned files via chown container';
+      docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' chown -R \$uid:\$gid /work;
+    fi"
 }
 
 # Build a bootable Dreamcast disc image (.cdi by default) from the ELF + assets.
