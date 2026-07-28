@@ -19,21 +19,20 @@ Branch: `requeijaum/dc-build-fixes` (base: upstream `sf94/dreamcast-kallistios-p
 | 3. Assets | Data.rsdk (207 MB) → 388 MB DC-nativo: .dtex (PVR), ADPCM, MPEG1, meshes otimizados. `-- DONE --` |
 | 4. Disco | cd-root 587 MB (Data.rsdk + Data/<media>) → CDI 710 MB via mkdcdisc |
 
-## Verificação de boot (Flycast headless no ryzen, via RetroArch core)
-Evidência técnica de que **o disco boota e o engine roda**:
-- CDI reconhecido: `retro_load_game: SonicManiaDC.cdi`
-- Hardware DC resetou/executou bootstrap: `SB/HOLLY: System reset requested`
-- Renderer GL (llvmpipe) OK: FBO, texturas, `glBlitFramebuffer test successful`
-- Loop de frames a 59.94 FPS (`SET_GEOMETRY` repetido continuamente)
-- **Zero "File not found", zero exception/abort** → assets em `/cd/Data/` localizados = layout de disco correto
-- Rodou 55-75 s sem crashar
+## Verificação final de boot (Flycast standalone buildado na workspace)
+O Flycast foi clonado e compilado localmente com símbolos de debug em
+`workspace/flycast/build/flycast`. O console serial do Dreamcast foi usado para
+localizar e corrigir o bootloop.
 
-**NÃO confirmado visualmente:** um screenshot do menu. Limitação de captura
-headless — o RetroArch+libretro renderiza num surface GL próprio que
-xwd/import não capturam da root window do Xvfb (não há flycast standalone
-instalado no ryzen). Isto é limitação da captura, NÃO do disco.
-→ **Confirmação final precisa do Rafael:** abrir no Flycast com tela real,
-  ou num Dreamcast com GDEMU/MODE.
+Resultado do teste final de 45 s:
+- **0 resets** e **0 fatal/SH4 exception/panic/assert**
+- `Data.rsdk`, GameConfig, Title Stage e StringsEN carregados do GD-ROM
+- 17 assets da Title Scene carregados
+- Logo, Sonic e background alocados com sucesso na VRAM PVR
+- Rafael ouviu a música/áudio do jogo funcionando no Flycast com tela real
+- Instrumentação temporária `[BOOTDBG]` removida no build final
+
+Conclusão: **o CDI boota e chega à tela de título; o bootloop foi corrigido.**
 
 ## Bugs corrigidos no caminho (commitados)
 1. `makejobs=-j12` quebrava o KOS build → número puro (`makejobs=12`)
@@ -41,20 +40,27 @@ instalado no ryzen). Isto é limitação da captura, NÃO do disco.
    shim `mmo::format`. Sem isso, nenhuma Special Stage 3D convertia.
 3. Container root poluía a árvore (`__pycache__`, `cmake-build-release`) e
    quebrava `rsync --delete` → `cmd_fixperms` + containers rodam `--user $uid:$gid`
-4. `cmd_disc` montava layout errado → corrigido: `/cd/Data.rsdk` (datapack) +
-   `/cd/Data/<media>` soltos (o engine sobrepõe o rsdk com os arquivos DC-nativos)
+4. O stub GDB do KOS iniciava automaticamente com `RSDK_DEBUG=1`, bloqueava a
+   serial e resetava após ~13 s → agora exige `RSDK_KOS_GDB_STUB=1` explícito.
+5. `KOS_USER_DIR` era declarado como `option()` booleano e virava `"OFF"` →
+   convertido para `CACHE STRING` e fixado como `/cd/` pelo build.
+6. `mkdcdisc -d cd-root` incluía o próprio diretório, criando
+   `/cd/cd-root/Data.rsdk` → trocado por `-D`, gerando `/cd/Data.rsdk`.
+7. Data.rsdk de 207 MB era configurado para buffer integral nos 16 MB de RAM →
+   KallistiOS agora faz streaming sob demanda do GD-ROM.
 
 ## Como jogar
 - **Emulador:** abrir `SonicManiaDC.cdi` no Flycast (standalone recomendado)
 - **Console real:** GDEMU / MODE / USB-GDROM lê o CDI direto
   (710 MB só cabe em CD-R via overburn)
 
-## Próximos passos possíveis (à escolha do Rafael)
-- [ ] Confirmar boot visual (Flycast com tela / Dreamcast real)
+## Próximos passos possíveis (opcionais)
+- [x] Confirmar boot e áudio no Flycast
+- [ ] Testar gameplay prolongado e saves/VMU
+- [ ] Testar no Dreamcast real com GDEMU/MODE
 - [ ] Puxar o CDI pra ideapad ou pendrive
 - [ ] Gerar `.gdi` se o loader preferir
-- [ ] Trimar o Data.rsdk pra logic-only (economiza ~200 MB — hoje ele ainda
-      carrega a mídia original não-usada)
+- [ ] Trimar o Data.rsdk pra logic-only (economiza ~200 MB)
 
 ## Arquivos-chave
 - `docker/Dockerfile`, `docker/build.sh` (image/engine/assets/disc)

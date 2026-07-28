@@ -66,6 +66,7 @@ cmd_engine() {
         -DPLATFORM=KallistiOS \
         -DRETRO_REVISION=2 \
         -DGAME_STATIC=ON \
+        -DKOS_USER_DIR=/cd/ \
         -DCMAKE_BUILD_TYPE=Release
       cmake --build workspace/build-dc -j$JOBS
   '"
@@ -137,7 +138,7 @@ cmd_disc() {
       # strip the ELF to shrink the bootable binary (debug info is huge)
       cp \"\$elf\" workspace/RSDKv5-stripped.elf
       sh-elf-strip workspace/RSDKv5-stripped.elf || true
-      mkdcdisc -e workspace/RSDKv5-stripped.elf -d \\\"\\$root\\\" -o workspace/SonicManiaDC.$fmt -V SONICMANIA
+      mkdcdisc -e workspace/RSDKv5-stripped.elf -D \"\$root\" -o workspace/SonicManiaDC.$fmt -V SONICMANIA
   '"
   log "disc image: $REMOTE_DIR/workspace/SonicManiaDC.$fmt"
 }
