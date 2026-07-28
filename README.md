@@ -1,3 +1,21 @@
+# 🎮 Sega Dreamcast port
+
+This branch adds a working **Sega Dreamcast** port of Sonic Mania Plus (RSDKv5 +
+KallistiOS + PowerVR backend). It produces a bootable `SonicManiaDC.cdi`
+playable in Flycast or on real hardware via GDEMU/MODE/USB-GDROM.
+
+- 👉 **[BUILD.md](./BUILD.md)** — easy quickstart (4 commands, prerequisites, troubleshooting)
+- 📖 **[BUILD-DREAMCAST.md](./BUILD-DREAMCAST.md)** — full engineering breakdown (toolchain, asset pipeline, disc layout, every fix)
+
+The whole SH4/KallistiOS toolchain lives in a Docker image — the only thing you
+install locally is **Docker**. You must supply your own legitimate `Data.rsdk`
+(the port ships no game assets).
+
+> The rest of this README is the upstream Sonic Mania Decompilation
+> documentation for the desktop/console builds.
+
+---
+
 # **SUPPORT THE OFFICIAL RELEASE OF SONIC MANIA (PLUS)**
 + Without assets from the official releases, this decompilation will not run.
 

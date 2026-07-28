@@ -4,8 +4,7 @@ This document describes how to build the Dreamcast port of Sonic Mania (RSDKv5 /
 KallistiOS + PowerVR backend) from a clean checkout, and how to produce a
 bootable disc image (`.cdi`) playable in Flycast or on real hardware.
 
-Branch: `requeijaum/dc-build-fixes` (based on the upstream
-`sf94/dreamcast-kallistios-pvr` work).
+Branch: `sf94/dreamcast-kallistios-pvr`.
 
 ---
 
