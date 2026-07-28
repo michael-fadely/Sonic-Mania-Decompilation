@@ -59,18 +59,20 @@ RUN git clone ${KOS_REPO} ${KOS_BASE} \
 # Modern KOS replaced dc-chain's download.sh/unpack.sh with a single
 # `make build platform=... toolchain_profile=...` target that fetches, unpacks,
 # patches and compiles gcc/binutils/newlib in one go.
+#
+# IMPORTANT: makejobs takes a BARE NUMBER. init.mk does `jobs_arg = -j$(makejobs)`,
+# so passing "-j12" yields "-j-j12" and make fails with a bogus arg. Use "12".
 WORKDIR ${KOS_BASE}/utils/kos-chain
 RUN make build \
         platform=dreamcast \
         toolchain_profile=${TOOLCHAIN_PROFILE} \
-        makejobs=-j${MAKE_JOBS} \
+        makejobs=${MAKE_JOBS} \
         verbose=1 \
     && make build \
         platform=aica \
         toolchain_profile=${TOOLCHAIN_PROFILE} \
-        makejobs=-j${MAKE_JOBS} \
-        verbose=1 \
-    && make distclean platform=dreamcast || true
+        makejobs=${MAKE_JOBS} \
+        verbose=1
 
 # =============================================================================
 # Stage 3: build KOS itself + sh4zam against the toolchain
