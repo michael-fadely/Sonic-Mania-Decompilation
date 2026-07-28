@@ -75,9 +75,34 @@ cmd_shell() {
 }
 
 cmd_assets() {
-  local rsdk="${1:-}"
-  [[ -n "$rsdk" ]] || die "usage: build.sh assets <path/to/Data.rsdk>"
-  die "asset pipeline not wired yet — needs a legit Data.rsdk on the remote host"
+  sync_to_remote
+  local rsdk_host="${1:-workspace/assets/Data.rsdk}"
+  log "processing assets from $rsdk_host (RSDKv5 extract -> DC-native dtex/adpcm/mpeg)"
+  # generate_assets.sh must run from its own dir (uses local *.txt concat lists).
+  # It writes the staged, DC-ready data tree we later burn to /cd/.
+  dhost "docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
+      set -e
+      source \$KOS_BASE/environ.sh
+      cd dependencies/RSDKv5/dreamcast
+      ./generate_assets.sh /work/${rsdk_host} /work/workspace/asset-src /work/workspace/cd-data
+  '"
+  log "staged DC assets under $REMOTE_DIR/workspace/cd-data"
+}
+
+# Build a bootable Dreamcast disc image (.cdi by default) from the ELF + assets.
+cmd_disc() {
+  sync_to_remote
+  local fmt="${1:-cdi}"
+  log "packaging bootable Dreamcast disc (.$fmt) with mkdcdisc"
+  dhost "docker run --rm -v '$REMOTE_DIR':/work -w /work '$IMAGE' bash -lc '
+      set -e
+      source \$KOS_BASE/environ.sh
+      elf=\$(find workspace/build-dc -name RetroEngine -o -name \"*.elf\" | head -1)
+      [ -n \"\$elf\" ] || { echo \"no RetroEngine ELF found — run engine first\"; exit 1; }
+      command -v mkdcdisc >/dev/null || { echo \"mkdcdisc missing in image\"; exit 3; }
+      mkdcdisc -e \"\$elf\" -d workspace/cd-data -o workspace/SonicManiaDC.$fmt -N
+  '"
+  log "disc image: $REMOTE_DIR/workspace/SonicManiaDC.$fmt"
 }
 
 case "${1:-}" in
@@ -85,5 +110,6 @@ case "${1:-}" in
   engine) cmd_engine ;;
   shell)  cmd_shell ;;
   assets) shift; cmd_assets "$@" ;;
-  *) die "usage: build.sh {image|engine|shell|assets <Data.rsdk>}" ;;
+  disc)   shift; cmd_disc "$@" ;;
+  *) die "usage: build.sh {image|engine|shell|assets [Data.rsdk]|disc [cdi|iso]}" ;;
 esac

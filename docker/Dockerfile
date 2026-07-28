@@ -108,14 +108,23 @@ RUN bash -c 'source ${KOS_BASE}/environ.sh \
       && cmake --build build \
       && cmake --install build' 2>&1 | tail -40
 
-# Asset-pipeline host tools (ffmpeg for sfx/music/video, imagemagick for gfx).
-# Placed LATE (after the expensive toolchain layers) so adding them never
-# invalidates the cached SH4/AICA/KOS build. dependencies/RSDKv5/dreamcast/*.sh
-# call: ffmpeg, convert/magick, python3, plus KOS utils pvrtex & wav2adpcm
-# (already built by the stage-3 `make` in utils/).
+# Asset-pipeline + disc-packaging host tools. Placed LATE (after the expensive
+# toolchain layers) so adding them never invalidates the cached SH4/AICA/KOS
+# build. dependencies/RSDKv5/dreamcast/*.sh call ffmpeg (sfx/music/video) and
+# convert/magick (gfx); KOS utils pvrtex + wav2adpcm come from the stage-3 make.
+# mkdcdisc builds the bootable .cdi/.iso from the ELF + /cd/ data tree.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg imagemagick \
+        meson ninja-build libisofs-dev zlib1g-dev libjpeg-dev \
     && rm -rf /var/lib/apt/lists/*
+
+ARG MKDCDISC_REPO=https://gitlab.com/simulant/mkdcdisc.git
+RUN git clone --depth 1 ${MKDCDISC_REPO} /tmp/mkdcdisc \
+    && cd /tmp/mkdcdisc \
+    && meson setup build \
+    && ninja -C build \
+    && install -m755 build/mkdcdisc /usr/local/bin/mkdcdisc \
+    && rm -rf /tmp/mkdcdisc
 
 # Convenience entrypoint: always have the KOS environment sourced
 RUN printf '#!/usr/bin/env bash\nset -e\nsource %s/environ.sh\nexec "$@"\n' "${KOS_BASE}" > /usr/local/bin/with-kos \
