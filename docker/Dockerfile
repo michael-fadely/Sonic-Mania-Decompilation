@@ -40,31 +40,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
-# Stage 2: KallistiOS dc-chain (SH4 + ARM cross compilers)
+# Stage 2: KallistiOS toolchain (kos-chain: SH4 + ARM cross compilers)
 # =============================================================================
 FROM base AS toolchain
 
 # Pin KallistiOS. Override with --build-arg KOS_REF=<sha|branch>.
 ARG KOS_REPO=https://github.com/KallistiOS/KallistiOS
 ARG KOS_REF=master
-# GCC version for the SH4 target. sh4zam wants a modern SH-GCC (15/16.x).
-ARG DC_GCC_VER=15.1.0
-ARG DC_BINUTILS_VER=2.44
-ARG DC_NEWLIB_VER=4.5.0.20241231
+# kos-chain toolchain profile. 'stable' currently = gcc 15.2.0 / binutils 2.45.1
+# / newlib 4.6.x, which satisfies sh4zam's modern SH-GCC (C++20) requirement.
+ARG TOOLCHAIN_PROFILE=stable
 ARG MAKE_JOBS=8
 
 RUN git clone ${KOS_REPO} ${KOS_BASE} \
     && cd ${KOS_BASE} && git checkout ${KOS_REF}
 
-# --- dc-chain: download + build the SH4/ARM GCC cross toolchain -------------
-WORKDIR ${KOS_BASE}/utils/dc-chain
-RUN cp Makefile.default.cfg Makefile.cfg \
-    && sed -i "s/^sh_gcc_ver=.*/sh_gcc_ver=${DC_GCC_VER}/"           Makefile.cfg 2>/dev/null || true \
-    && sed -i "s/^sh_binutils_ver=.*/sh_binutils_ver=${DC_BINUTILS_VER}/" Makefile.cfg 2>/dev/null || true \
-    && sed -i "s/^makejobs=.*/makejobs=-j${MAKE_JOBS}/"              Makefile.cfg 2>/dev/null || true
-RUN ./download.sh && ./unpack.sh
-RUN make -j1 2>&1 | tail -80    # dc-chain drives its own -j internally
-RUN ./cleanup.sh || true
+# --- kos-chain: build the SH4 (sh-elf) + AICA (arm-eabi) toolchains ----------
+# Modern KOS replaced dc-chain's download.sh/unpack.sh with a single
+# `make build platform=... toolchain_profile=...` target that fetches, unpacks,
+# patches and compiles gcc/binutils/newlib in one go.
+WORKDIR ${KOS_BASE}/utils/kos-chain
+RUN make build \
+        platform=dreamcast \
+        toolchain_profile=${TOOLCHAIN_PROFILE} \
+        makejobs=-j${MAKE_JOBS} \
+        verbose=1 \
+    && make build \
+        platform=aica \
+        toolchain_profile=${TOOLCHAIN_PROFILE} \
+        makejobs=-j${MAKE_JOBS} \
+        verbose=1 \
+    && make distclean platform=dreamcast || true
 
 # =============================================================================
 # Stage 3: build KOS itself + sh4zam against the toolchain
