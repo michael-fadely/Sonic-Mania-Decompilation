@@ -137,7 +137,7 @@ cmd_disc() {
       # strip the ELF to shrink the bootable binary (debug info is huge)
       cp \"\$elf\" workspace/RSDKv5-stripped.elf
       sh-elf-strip workspace/RSDKv5-stripped.elf || true
-      mkdcdisc -e workspace/RSDKv5-stripped.elf -d \"\$root\" -o workspace/SonicManiaDC.$fmt -N -V SONICMANIA
+      mkdcdisc -e workspace/RSDKv5-stripped.elf -d \\\"\\$root\\\" -o workspace/SonicManiaDC.$fmt -V SONICMANIA
   '"
   log "disc image: $REMOTE_DIR/workspace/SonicManiaDC.$fmt"
 }
