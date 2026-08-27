@@ -30,7 +30,7 @@ This project uses [CMake](https://cmake.org/), a versatile building system that 
 In order to clone the repository, you need to install Git, which you can get [here](https://git-scm.com/downloads).
 
 Clone the repo **recursively**, using:
-`git clone --recursive https://github.com/Rubberduckycooly/Sonic-Mania-Decompilation`
+`git clone --recursive https://github.com/michael-fadely/Sonic-Mania-Decompilation`
 
 If you've already cloned the repo, run this command inside of the repository:
 ```git submodule update --init --recursive```
@@ -54,7 +54,7 @@ Install the following dependencies: then follow the [compilation steps below](#c
 - **pacman (Arch):** `sudo pacman -S base-devel cmake glew glfw libtheora`
 - **apt (Debian/Ubuntu):** `sudo apt install build-essential cmake libglew-dev libglfw3-dev libtheora-dev`
 - **rpm (Fedora):** `sudo dnf install make cmake gcc glew-devel glfw-devel libtheora-devel zlib-devel`
-- Your favorite package manager here, [make a pull request](https://github.com/Rubberduckycooly/Sonic-Mania-Decompilation/fork) (also update [RSDKv5U](https://github.com/Rubberduckycooly/RSDKv5-Decompilation)!)
+- Your favorite package manager here, [make a pull request](https://github.com/michael-fadely/Sonic-Mania-Decompilation/fork) (also update [RSDKv5U](https://github.com/michael-fadely/RSDKv5-Decompilation)!)
 
 #### (make sure to [install GL shaders!](#q-why-arent-videosfilters-working-while-using-gl))
 
@@ -101,7 +101,7 @@ The following cmake arguments are available when compiling:
 ### Other Platforms
 The only directly supported platforms are those listed above. Since Mania is very easy to build, requiring no additional dependencies, virtually any platform that can run RSDKv5 can compile Mania easily.
 
-However, there are a multitude of ports listed in the **[RSDKv5 repository.](https://github.com/Rubberduckycooly/RSDKv5-Decompilation)**
+However, there are a multitude of ports listed in the **[RSDKv5 repository.](https://github.com/michael-fadely/RSDKv5-Decompilation)**
 
 # FAQ
 ## Q: Why aren't videos/filters working while using GL?
@@ -128,7 +128,7 @@ TargetVersion=5
 A: Submit an issue in the issues tab and we _might_ fix it in the main branch. Don't expect any major future releases, however.
 
 ### Q: Will you do a decompilation for Sonic CD (2011) and/or Sonic 1/2 (2013)?
-A: I already have! You can find Sonic CD [here](https://github.com/Rubberduckycooly/Sonic-CD-11-Decompilation) and Sonic 1/2 [here](https://github.com/Rubberduckycooly/Sonic-1-2-2013-Decompilation).
+A: I already have! You can find Sonic CD [here](https://github.com/michael-fadely/Sonic-CD-11-Decompilation) and Sonic 1/2 [here](https://github.com/michael-fadely/Sonic-1-2-2013-Decompilation).
 
 ### Q: Are there anymore decompilation projects in the works, such as Sonic Origins/Sonic 3 & Knuckles?
 A: Absolutely not. This project took about 1 and a half years to do, and doing Sonic 3 & Knuckles would take equally as long, if not longer, as it's not only larger in scope, but Origins' hybrid codebase makes it harder to read. Between our other decompilation projects and this one, we're done with decompiling, at least for the time being. We would also like to expand our horizons beyond Sonic going forward, and we don't wish to spend forever just playing catchup with Sega's official releases. Please do not expect any more decompilations from us, Sonic or otherwise!
